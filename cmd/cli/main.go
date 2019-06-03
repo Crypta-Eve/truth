@@ -86,7 +86,7 @@ func init() {
 					Action:      dequeue.ProcessJobQueue,
 					Usage:       "Works on jobs that are in the job queue",
 					UsageText:   "jobs",
-					Description: "Work on items in the job queue",
+					Description: "Work on items in the job queue. Will check for new jobs every 5s and loop until interrupted",
 				},
 			},
 		},
