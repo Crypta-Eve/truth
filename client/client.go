@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Crypta-Eve/truth/store"
-	"github.com/go-redis/redis"
 )
 
 type (
@@ -24,19 +23,6 @@ type (
 
 func New() (*Client, error) {
 	logger := log.New(os.Stdout, "CLIENT:", log.Lshortfile|log.Ldate|log.Ltime)
-
-	envRedis := viper.GetStringMapString("redis")
-
-	rclient := redis.NewClient(&redis.Options{
-		Addr:     envRedis["host"] + ":" + envRedis["port"],
-		Password: envRedis["password"],
-		DB:       0,
-	})
-
-	_, err := rclient.Ping().Result()
-	if err != nil {
-		return nil, err
-	}
 
 	// now check we have access to mongo
 
