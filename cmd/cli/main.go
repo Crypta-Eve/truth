@@ -88,6 +88,14 @@ func init() {
 					UsageText:   "jobs",
 					Description: "Work on items in the job queue. Will check for new jobs every 5s and loop until interrupted",
 				},
+				cli.Command{
+					Name:        "missing",
+					Category:    "Process",
+					Action:      dequeue.ProcessMissingKillmails,
+					Usage:       "Works on making sure we have all the killmails we ",
+					UsageText:   "jobs",
+					Description: "",
+				},
 			},
 		},
 	}

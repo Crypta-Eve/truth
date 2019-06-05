@@ -50,16 +50,13 @@ func ProcessJobQueue(c *cli.Context) error {
 		// Job available, lets go to work
 
 		switch job.ID {
-		case store.JobScrapeCharacter:
+		case store.JobScrapeCharacter, store.JobScrapeCorporation, store.JobScrapeAlliance:
 			err := scrapeCharacter(client, job)
 			if err != nil {
 				err = errors.Wrap(err, fmt.Sprintf("Error running zkill scrape for character job - %+v", job))
 				client.Log.Println(err)
 				continue
 			}
-		case store.JobScrapeCorporation:
-
-		case store.JobScrapeAlliance:
 
 		default:
 			err := fmt.Errorf("Invalid job description from job - %d", job.ID)
@@ -68,6 +65,46 @@ func ProcessJobQueue(c *cli.Context) error {
 
 		}
 	}
+}
+
+func ProcessMissingKillmails(c *cli.Context) error {
+	client, err := client.New()
+
+	if err != nil {
+		err = errors.Wrap(err, "failed to create client")
+		return cli.NewExitError(err, 1)
+	}
+
+	ids, err := client.Store.ListAllExistingIDs()
+
+	client.Log.Printf("Found %v existing killmail ids", len(ids))
+
+	if err != nil {
+		err = errors.Wrap(err, "Failed to get list of all existing killmails")
+		return cli.NewExitError(err, 1)
+
+	}
+
+	// Now to build the massive request that will tell us what we are missing
+	var IDList []int
+	for _, v := range ids {
+		IDList = append(IDList, v)
+	}
+
+	missingMails, err := client.Store.GetKillsNotInList(IDList)
+
+	numMissing := len(missingMails)
+	client.Log.Printf("Have %v killmails to fetch", numMissing)
+
+	for i, mail := range missingMails {
+		client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+		err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
+		if err != nil {
+			client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+		}
+	}
+
+	return nil
 }
 
 func scrapeCharacter(c *client.Client, job store.Queue) error {
@@ -79,13 +116,24 @@ func scrapeCharacter(c *client.Client, job store.Queue) error {
 		return errors.Wrap(err, "CharID in job was not an integer")
 	}
 
-	apiURL := fmt.Sprintf("https://zkillboard.com/api/characterID/%v/page/", charID)
+	var entityType string
+
+	switch job.ID {
+	case store.JobScrapeCharacter:
+		entityType = "character"
+	case store.JobScrapeCorporation:
+		entityType = "corporation"
+	case store.JobScrapeAlliance:
+		entityType = "alliance"
+	}
+
+	apiURL := fmt.Sprintf("https://zkillboard.com/api/%vID/%v/page/", entityType, charID)
 
 	pagenum := 0
 	var pages []zkillmail
 
 	for {
-		pagenum += 1
+		pagenum++
 		urlToHit := fmt.Sprintf(apiURL+"%d/", pagenum)
 
 		req, err := http.NewRequest(http.MethodGet, urlToHit, nil)
@@ -105,7 +153,7 @@ func scrapeCharacter(c *client.Client, job store.Queue) error {
 
 		defer res.Body.Close()
 
-		fmt.Println(len(body))
+		fmt.Print(">")
 
 		if len(body) < 4 {
 			break

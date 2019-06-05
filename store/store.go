@@ -4,12 +4,13 @@ import "time"
 
 type (
 	Store interface {
-		InsertKillmail(id int, data string) error
-
+		InsertKillmail(kill KillmailData) error
 		InsertKillIDHash(idhash ScrapeQueue) error
 
 		InsertQueueJob(job Queue) error
 		PopQueueJob() (job Queue, err error)
+		ListAllExistingIDs() (ids []int, err error)
+		GetKillsNotInList(existing []int) (hashes []ScrapeQueue, err error)
 		MaintainJobReservation(job Queue, time time.Time) error
 		MarkJobComplete(job Queue) error
 	}
@@ -30,8 +31,51 @@ type (
 	}
 
 	KillmailData struct {
-		KillID   int    `json:"_id"`
-		KillData string `json:"killmail"`
+		KillID   int         `json:"_id" bson:"_id"`
+		KillData ESIKillmail `json:"killmail" bson:"killmail"`
+	}
+
+	ESIKillmail struct {
+		Attackers     []ESIAttacker `json:"attackers" bson:"attackers"`
+		KillmailID    int           `json:"killmail_id" bson:"killmail_id"`
+		KillmailTime  time.Time     `json:"killmail_time" bson:"killmail_time"`
+		SolarSystemID int           `json:"solar_system_id" bson:"solar_system_id"`
+		Victim        ESIVictim     `json:"victim" bson:"victim"`
+	}
+
+	ESIAttacker struct {
+		AllianceID     int     `json:"alliance_id,omitempty" bson:"alliance_id,omitempty"`
+		CorporationID  int     `json:"corporation_id" bson:"corporation_id"`
+		CharacterID    int     `json:"character_id" bson:"character_id"`
+		DamageDone     int     `json:"damage_done" bson:"damage_done"`
+		FinalBlow      bool    `json:"final_blow" bson:"final_blow"`
+		SecurityStatus float32 `json:"security_status" bson:"security_status"`
+		ShipTypeID     int     `json:"ship_type_id" bson:"ship_type_id"`
+		WeaponTypeID   int     `json:"weapon_type_id" bson:"weapon_type_id"`
+	}
+
+	ESIVictim struct {
+		AllianceID    int         `json:"alliance_id,omitempty" bson:"alliance_id,omitempty"`
+		CorporationID int         `json:"corporation_id" bson:"corporation_id"`
+		CharacterID   int         `json:"character_id" bson:"character_id"`
+		DamageTaken   int         `json:"damage_taken" bson:"damage_taken"`
+		Items         []ESIItem   `json:"items" bson:"items"`
+		Position      ESIPosition `json:"position" bson:"position"`
+		ShipTypeID    int         `json:"ship_type_id" bson:"ship_type_id"`
+	}
+
+	ESIItem struct {
+		Flag              int `json:"flag" bson:"flag"`
+		ItemTypeID        int `json:"item_type_id" bson:"item_type_id"`
+		QuantityDropped   int `json:"quantity_dropped,omitempty" bson:"quantity_dropped,omitempty"`
+		QuantityDestroyed int `json:"quantity_destroyed,omitempty" bson:"quantity_destroyed,omitempty"`
+		Singleton         int `json:"singleton" bson:"singleton"`
+	}
+
+	ESIPosition struct {
+		X float64 `json:"x" bson:"x"`
+		Y float64 `json:"y" bson:"y"`
+		Z float64 `json:"z" bson:"z"`
 	}
 )
 

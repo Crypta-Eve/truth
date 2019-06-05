@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -56,6 +55,7 @@ func (db *DB) PopQueueJob() (job Queue, err error) {
 	return job, nil
 }
 
+
 func (db *DB) MaintainJobReservation(job Queue, t time.Time) error {
 
 	collection := db.Database.Database("truth").Collection("jobqueue")
@@ -93,13 +93,11 @@ func (db *DB) MarkJobComplete(job Queue) error {
 
 	update := bson.M{
 		"$set": bson.M{
-			"availableat": time.Now(),
+			"availableAt": time.Now(),
 			"complete":    true,
 		},
 	}
-	lll, err := collection.UpdateOne(context.TODO(), filter, update)
-
-	fmt.Println(lll)
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
 
 	return err
 
