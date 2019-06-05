@@ -160,3 +160,7 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/go,linux,windows,jetbrains+all,visualstudiocode
 
+# Start custom ignores
+
+#ignore the env file
+cmd/cli/env.json
