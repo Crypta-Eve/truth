@@ -301,3 +301,54 @@ func LocationLosses(c *cli.Context) error {
 	return nil
 
 }
+
+func TZLosses(c *cli.Context) error {
+
+	client, err := client.New()
+
+	if err != nil {
+		err = errors.Wrap(err, "failed to create client")
+		return cli.NewExitError(err, 1)
+	}
+
+	argnum := len(c.Args())
+
+	corpID := 0
+
+	if argnum == 0 {
+		client.Log.Fatal("No alliance id given")
+	} else if argnum == 1 {
+		arg := c.Args().First()
+		corpID, err = strconv.Atoi(arg)
+		if err != nil {
+			return cli.NewExitError(errors.Wrap(err, "Alliance ID not an integer"), 1)
+		}
+
+	} else if argnum == 3 {
+		client.Log.Print("Dates NYI")
+	} else {
+		client.Log.Fatal("invalid number of arguments")
+	}
+
+	mails, err := client.Store.GetAllianceLosses(corpID)
+
+	if err != nil {
+		err = errors.Wrap(err, "Failed to get ship losses for alliance")
+		return cli.NewExitError(err, 1)
+	}
+
+	tzCount := make(map[string]int)
+	for _, mail := range mails {
+		tzCount[strconv.Itoa(mail.KillmailTime.Hour())]++
+	}
+
+
+	output := rankByValue(tzCount)
+
+	for _, loss := range output {
+		client.Log.Printf("%v", loss)
+	}
+
+	return nil
+
+}
