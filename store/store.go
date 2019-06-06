@@ -1,12 +1,19 @@
 package store
 
-import "time"
+import (
+	"time"
+)
 
 type (
 	Store interface {
+		// Insert new data
 		InsertKillmail(kill KillmailData) error
 		InsertKillIDHash(idhash ScrapeQueue) error
 
+		//Analytics required methods
+		GetAllianceLosses(allianceID int) (results []ESIKillmail, err error)
+
+		// Queue management
 		InsertQueueJob(job Queue) error
 		PopQueueJob() (job Queue, err error)
 		ListAllExistingIDs() (ids []int, err error)

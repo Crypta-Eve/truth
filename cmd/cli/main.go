@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Crypta-Eve/truth/analytics"
 	"github.com/Crypta-Eve/truth/dequeue"
 	"github.com/Crypta-Eve/truth/enqueue"
 	"github.com/Crypta-Eve/truth/testconnect"
@@ -95,6 +96,55 @@ func init() {
 					Usage:       "Works on making sure we have all the killmails we ",
 					UsageText:   "jobs",
 					Description: "",
+				},
+			},
+		},
+		cli.Command{
+			Name:      "analyse",
+			Category:  "Analysis",
+			Usage:     "get info from the db",
+			UsageText: "analyse [subcommand]",
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:        "alliance",
+					Category:    "Analysis",
+					Usage:       "",
+					UsageText:   "alliance [subcommand]",
+					Description: "",
+					Subcommands: []cli.Command{
+						cli.Command{
+							Name:        "shiplosses",
+							Category:    "Analysis",
+							Usage:       "shiplosses",
+							UsageText:   "shiplosses [allianceid]",
+							Description: "",
+							Action:      analytics.ShipLosses,
+						},
+						cli.Command{
+							Name:        "pilotlosses",
+							Category:    "Analysis",
+							Usage:       "pilotlosses",
+							UsageText:   "pilotlosses [allianceid]",
+							Description: "",
+							Action:      analytics.PilotLosses,
+						},
+						cli.Command{
+							Name:        "corplosses",
+							Category:    "Analysis",
+							Usage:       "corplosses",
+							UsageText:   "corplosses [allianceid]",
+							Description: "",
+							Action:      analytics.CorpLosses,
+						},
+						cli.Command{
+							Name:        "loclosses",
+							Category:    "Analysis",
+							Usage:       "loclosses",
+							UsageText:   "loclosses [allianceid]",
+							Description: "",
+							Action:      analytics.LocationLosses,
+						},
+					},
 				},
 			},
 		},
