@@ -116,55 +116,20 @@ func init() {
 			UsageText: "analyse [subcommand]",
 			Subcommands: []cli.Command{
 				cli.Command{
-					Name:        "shiplosses",
+					Name:        "losses",
 					Category:    "Analysis",
 					Usage:       "count the sum of each shiptype lost",
-					UsageText:   "shiplosses [entityType] [entityID] (optional) [startdate] [enddate]",
+					UsageText:   "losses [aggregate] [entityType] [entityID] (optional [startdate] [enddate])",
 					Description: "",
-					Action:      analytics.ShipLosses,
+					Action:      analytics.AggregateLosses,
 				},
-				//Need to work through and fix all the ones below here to follow the new model
 				cli.Command{
-					Name:        "alliance",
+					Name:        "killed",
 					Category:    "Analysis",
-					Usage:       "",
-					UsageText:   "alliance [subcommand]",
+					Usage:       "group by aggregate those killed by the entity",
+					UsageText:   "kills [aggregate] [entityType] [entityID] (optional [startdate] [enddate])",
 					Description: "",
-					Subcommands: []cli.Command{
-
-						cli.Command{
-							Name:        "pilotlosses",
-							Category:    "Analysis",
-							Usage:       "pilotlosses",
-							UsageText:   "pilotlosses [allianceid]",
-							Description: "",
-							Action:      analytics.PilotLosses,
-						},
-						cli.Command{
-							Name:        "corplosses",
-							Category:    "Analysis",
-							Usage:       "corplosses",
-							UsageText:   "corplosses [allianceid]",
-							Description: "",
-							Action:      analytics.CorpLosses,
-						},
-						cli.Command{
-							Name:        "loclosses",
-							Category:    "Analysis",
-							Usage:       "loclosses",
-							UsageText:   "loclosses [allianceid]",
-							Description: "",
-							Action:      analytics.LocationLosses,
-						},
-						cli.Command{
-							Name:        "tzlosses",
-							Category:    "Analysis",
-							Usage:       "tzlosses",
-							UsageText:   "tzlosses [allianceid]",
-							Description: "",
-							Action:      analytics.TZLosses,
-						},
-					},
+					Action:      analytics.AggregateKills,
 				},
 			},
 		},
@@ -196,6 +161,7 @@ func init() {
 }
 
 func main() {
+
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)

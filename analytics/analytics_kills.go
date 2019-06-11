@@ -9,18 +9,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-//AggregateLossCountAnalysis returns a sorted slice of Pair items where the Key is a Entity name and the key is the number lost for the entity type
-func AggregateLossCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
+//AggregateLossCountAnalysis returns a sorted slice of Pair items where the Key is a Entity name and the key is the number killed for the entity type
+func AggregateKillCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
 
 	filterField := ""
 
 	switch entityType {
 	case "alliance":
-		filterField = "killmail.victim.alliance_id"
+		filterField = "killmail.attackers.alliance_id"
 	case "corporation":
-		filterField = "killmail.victim.corporation_id"
+		filterField = "killmail.attackers.corporation_id"
 	case "character":
-		filterField = "killmail.victim.character_id"
+		filterField = "killmail.attackers.character_id"
 	default:
 		return counts, errors.New("Invalid entityType got through.... This shouldnt happen")
 	}
@@ -56,8 +56,6 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 		}
 
 	}
-
-	fmt.Println(len(idCount))
 
 	var ids []int
 

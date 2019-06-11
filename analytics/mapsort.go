@@ -1,6 +1,6 @@
 package analytics
 
-import(
+import (
 	"sort"
 )
 
@@ -25,6 +25,6 @@ func rankByValue(mip map[string]int) PairList {
 		pl[i] = Pair{k, v}
 		i++
 	}
-	sort.Sort(sort.Reverse(pl))
+	sort.Sort((pl))
 	return pl
 }
