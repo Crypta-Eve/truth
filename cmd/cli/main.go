@@ -8,6 +8,7 @@ import (
 	"github.com/Crypta-Eve/truth/analytics"
 	"github.com/Crypta-Eve/truth/dequeue"
 	"github.com/Crypta-Eve/truth/enqueue"
+	"github.com/Crypta-Eve/truth/reports"
 	"github.com/Crypta-Eve/truth/testconnect"
 
 	"github.com/spf13/viper"
@@ -25,6 +26,7 @@ func init() {
 	app = cli.NewApp()
 	app.Name = "Eve Truth CLI"
 	app.Version = "0.1.1"
+	app.Description = "CLI interface for Eve Truth Engine"
 	app.Authors = []cli.Author{
 		{
 			Name:  "Crypta Electrica",
@@ -93,8 +95,16 @@ func init() {
 					Name:        "missing",
 					Category:    "Process",
 					Action:      dequeue.ProcessMissingKillmails,
-					Usage:       "Works on making sure we have all the killmails we ",
+					Usage:       "Works on making sure we have all the killmails we have ids for",
 					UsageText:   "jobs",
+					Description: "",
+				},
+				cli.Command{
+					Name:        "zkb",
+					Category:    "Process",
+					Action:      dequeue.ProcessMissingZKB,
+					Usage:       "Make sure all kills have a zkb field",
+					UsageText:   "zkb",
 					Description: "",
 				},
 			},
@@ -106,20 +116,22 @@ func init() {
 			UsageText: "analyse [subcommand]",
 			Subcommands: []cli.Command{
 				cli.Command{
+					Name:        "shiplosses",
+					Category:    "Analysis",
+					Usage:       "count the sum of each shiptype lost",
+					UsageText:   "shiplosses [entityType] [entityID] (optional) [startdate] [enddate]",
+					Description: "",
+					Action:      analytics.ShipLosses,
+				},
+				//Need to work through and fix all the ones below here to follow the new model
+				cli.Command{
 					Name:        "alliance",
 					Category:    "Analysis",
 					Usage:       "",
 					UsageText:   "alliance [subcommand]",
 					Description: "",
 					Subcommands: []cli.Command{
-						cli.Command{
-							Name:        "shiplosses",
-							Category:    "Analysis",
-							Usage:       "shiplosses",
-							UsageText:   "shiplosses [allianceid]",
-							Description: "",
-							Action:      analytics.ShipLosses,
-						},
+
 						cli.Command{
 							Name:        "pilotlosses",
 							Category:    "Analysis",
@@ -153,6 +165,22 @@ func init() {
 							Action:      analytics.TZLosses,
 						},
 					},
+				},
+			},
+		},
+		cli.Command{
+			Name:      "report",
+			Category:  "Report",
+			Usage:     "Serve a html report of the given entity",
+			UsageText: "report [subcommand]",
+			Subcommands: []cli.Command{
+				cli.Command{
+					Name:        "alliance",
+					Category:    "Report",
+					Usage:       "alliance [allianceid]",
+					UsageText:   "",
+					Description: "Serve a html report of an alliance",
+					Action:      reports.AllianceReportServer,
 				},
 			},
 		},

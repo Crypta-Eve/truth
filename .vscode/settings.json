@@ -1,3 +1,5 @@
 {
-    "go.formatTool": "goimports"
+    "go.formatTool": "goimports",
+    "go.autocompleteUnimportedPackages": true,
+    "go.buildOnSave": "workspace"
 }

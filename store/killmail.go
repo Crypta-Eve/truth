@@ -48,7 +48,7 @@ func (db *DB) ListAllExistingIDs() (ids []int, err error) {
 	for c.Next(ctx) {
 
 		type fetchid struct {
-			Id       int   `bson:"_id"`
+			Id       int      `bson:"_id"`
 			Killmail bson.Raw `bson:"killmail"`
 		}
 
@@ -98,4 +98,41 @@ func (db *DB) GetKillsNotInList(existing []int) (hashes []ScrapeQueue, err error
 
 	return hashes, nil
 
+}
+
+func (db *DB) GetKillsMissingZKB() (hashes []ScrapeQueue, err error) {
+	collection := db.Database.Database("truth").Collection("killmails")
+
+	filter := bson.M{
+		"zkb": bson.M{
+			"$exists": false,
+		},
+	}
+
+	c, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return hashes, errors.Wrap(err, "error retrieving killmails missing zkb element")
+	}
+
+	defer c.Close(context.TODO())
+
+	for c.Next(context.TODO()) {
+		var hsh ScrapeQueue
+		err = c.Decode(&hsh)
+		if err != nil {
+			return hashes, err
+		}
+
+		hashes = append(hashes, hsh)
+	}
+
+	return hashes, nil
+}
+
+func (db *DB) UpdateKillmail(filter interface{}, update interface{}) error {
+	collection := db.Database.Database("truth").Collection("killmails")
+
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+
+	return err
 }

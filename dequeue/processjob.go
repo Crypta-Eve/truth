@@ -107,6 +107,37 @@ func ProcessMissingKillmails(c *cli.Context) error {
 	return nil
 }
 
+func ProcessMissingZKB(c *cli.Context) error {
+	client, err := client.New()
+
+	if err != nil {
+		err = errors.Wrap(err, "failed to create client")
+		return cli.NewExitError(err, 1)
+	}
+
+	ids, err := client.Store.GetKillsMissingZKB()
+
+	client.Log.Printf("Found %v killmails that need updating", len(ids))
+
+	if err != nil {
+		err = errors.Wrap(err, "Failed to get list of killmails that are short zkb")
+		return cli.NewExitError(err, 1)
+
+	}
+
+	numMissing := len(ids)
+
+	for i, mail := range ids {
+		client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+		err := client.FetchAndInsertZKB(mail.ID)
+		if err != nil {
+			client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+		}
+	}
+
+	return nil
+}
+
 func scrapeCharacter(c *client.Client, job store.Queue) error {
 
 	//Grab the charID from args. Atm we do not support date ranges

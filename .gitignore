@@ -164,3 +164,4 @@ $RECYCLE.BIN/
 
 #ignore the env file
 cmd/cli/env.json
+env.json

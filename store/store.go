@@ -10,14 +10,18 @@ type (
 		InsertKillmail(kill KillmailData) error
 		InsertKillIDHash(idhash ScrapeQueue) error
 
-		//Analytics required methods
-		GetAllianceLosses(allianceID int) (results []ESIKillmail, err error)
+		//Update data
+		UpdateKillmail(filter interface{}, update interface{}) error
+
+		//RawFindRequest
+		GetData(filter interface{}) (results []KillmailData, err error)
 
 		// Queue management
 		InsertQueueJob(job Queue) error
 		PopQueueJob() (job Queue, err error)
 		ListAllExistingIDs() (ids []int, err error)
 		GetKillsNotInList(existing []int) (hashes []ScrapeQueue, err error)
+		GetKillsMissingZKB() (hashes []ScrapeQueue, err error)
 		MaintainJobReservation(job Queue, time time.Time) error
 		MarkJobComplete(job Queue) error
 	}
@@ -40,6 +44,7 @@ type (
 	KillmailData struct {
 		KillID   int         `json:"_id" bson:"_id"`
 		KillData ESIKillmail `json:"killmail" bson:"killmail"`
+		ZKBData  ZKBData     `json:"zkb" bson:"zkb"`
 	}
 
 	ESIKillmail struct {
@@ -83,6 +88,22 @@ type (
 		X float64 `json:"x" bson:"x"`
 		Y float64 `json:"y" bson:"y"`
 		Z float64 `json:"z" bson:"z"`
+	}
+
+	ZKBResponse struct {
+		KillmailID int     `json:"killmail_id"`
+		ZKB        ZKBData `json:"zkb"`
+	}
+
+	ZKBData struct {
+		LocationID  int     `json:"locationID" bson:"location_id"`
+		Hash        string  `json:"hash" bson:"hash"`
+		FittedValue float64 `json:"fittedValue" bson:"fitted_value"`
+		TotalValue  float64 `json:"totalValue" bson:"total_value"`
+		Points      int     `json:"points" bson:"points"`
+		NPC         bool    `json:"npc" bson:"npc"`
+		Solo        bool    `json:"solo" bson:"solo"`
+		Awox        bool    `json:"awox" bson:"awox"`
 	}
 )
 
