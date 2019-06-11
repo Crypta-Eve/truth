@@ -25,6 +25,6 @@ func rankByValue(mip map[string]int) PairList {
 		pl[i] = Pair{k, v}
 		i++
 	}
-	sort.Sort((pl))
+	sort.Sort(sort.Reverse(pl))
 	return pl
 }

@@ -55,7 +55,6 @@ func (db *DB) PopQueueJob() (job Queue, err error) {
 	return job, nil
 }
 
-
 func (db *DB) MaintainJobReservation(job Queue, t time.Time) error {
 
 	collection := db.Database.Database("truth").Collection("jobqueue")
@@ -63,7 +62,7 @@ func (db *DB) MaintainJobReservation(job Queue, t time.Time) error {
 	filter := bson.M{
 		"id":   job.ID,
 		"args": job.Args,
-		// "attempts": job.Attempts, (cant guarentee this one)
+		// "attempts": job.Attempts, (cant guarantee this one)
 		"complete":   job.Complete,
 		"reservedAt": job.ReservedAt,
 		"createdAt":  job.CreatedAt,

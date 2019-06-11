@@ -35,7 +35,7 @@ func (client *Client) ResolveIDsToNames(ids []int) (names map[int]string, err er
 		}
 	}
 
-	return names, nil
+	return names, err
 }
 
 //split slice into smaller shucks acceptable for esi

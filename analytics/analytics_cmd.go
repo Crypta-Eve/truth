@@ -80,7 +80,7 @@ func AggregateLosses(c *cli.Context) error {
 
 }
 
-func AggregateKills(c *cli.Context) error {
+func AggregateKilled(c *cli.Context) error {
 
 	client, err := client.New()
 
@@ -138,7 +138,7 @@ func AggregateKills(c *cli.Context) error {
 		client.Log.Fatal("invalid number of arguments")
 	}
 
-	output, err := AggregateKillCountAnalysis(aggregateType, entityType, allID, client)
+	output, err := AggregateKilledCountAnalysis(aggregateType, entityType, allID, client)
 	if err != nil {
 		return cli.NewExitError(errors.Wrap(err, "Failed to perform ship loss analysis"), 1)
 	}

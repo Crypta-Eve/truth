@@ -92,6 +92,9 @@ func ProcessMissingKillmails(c *cli.Context) error {
 	}
 
 	missingMails, err := client.Store.GetKillsNotInList(IDList)
+	if err != nil {
+		return cli.NewExitError(errors.Wrap(err, "Failed to get kills that are not in list"), 1)
+	}
 
 	numMissing := len(missingMails)
 	client.Log.Printf("Have %v killmails to fetch", numMissing)
@@ -181,6 +184,9 @@ func scrapeCharacter(c *client.Client, job store.Queue) error {
 		}
 
 		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return errors.Wrap(err, "Failed to read zkill response")
+		}
 
 		defer res.Body.Close()
 

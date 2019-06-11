@@ -10,7 +10,7 @@ import (
 )
 
 //AggregateLossCountAnalysis returns a sorted slice of Pair items where the Key is a Entity name and the key is the number killed for the entity type
-func AggregateKillCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
+func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
 
 	filterField := ""
 

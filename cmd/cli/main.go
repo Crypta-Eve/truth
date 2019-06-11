@@ -129,7 +129,7 @@ func init() {
 					Usage:       "group by aggregate those killed by the entity",
 					UsageText:   "kills [aggregate] [entityType] [entityID] (optional [startdate] [enddate])",
 					Description: "",
-					Action:      analytics.AggregateKills,
+					Action:      analytics.AggregateKilled,
 				},
 			},
 		},
