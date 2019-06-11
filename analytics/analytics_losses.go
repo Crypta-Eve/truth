@@ -61,7 +61,7 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 
 	var ids []int
 
-	for k, _ := range idCount {
+	for k := range idCount {
 		ids = append(ids, k)
 	}
 

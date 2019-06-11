@@ -35,13 +35,13 @@ func init() {
 	}
 
 	app.Commands = []cli.Command{
-		cli.Command{
+		{
 			Name:      "queue",
 			Category:  "Queue",
 			Usage:     "Handles queueing scrapes",
 			UsageText: "queue [subcommand]",
 			Subcommands: []cli.Command{
-				cli.Command{
+				{
 					Name:        "character",
 					Category:    "Queue",
 					Action:      enqueue.ScrapeCharacterJob,
@@ -50,7 +50,7 @@ func init() {
 					Description: "Queue a character scrape",
 				},
 
-				cli.Command{
+				{
 					Name:        "corporation",
 					Category:    "Queue",
 					Action:      enqueue.ScrapeCorporationJob,
@@ -59,7 +59,7 @@ func init() {
 					Description: "Queue a corp scrape",
 				},
 
-				cli.Command{
+				{
 					Name:        "alliance",
 					Category:    "Queue",
 					Action:      enqueue.ScrapeAllianceJob,
@@ -69,7 +69,7 @@ func init() {
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:        "test",
 			Category:    "Test",
 			Usage:       "Test connections",
@@ -77,13 +77,13 @@ func init() {
 			Action:      testconnect.TestExternalAppConnections,
 			Description: "Test connectivity to external appliances",
 		},
-		cli.Command{
+		{
 			Name:      "process",
 			Category:  "Process",
 			Usage:     "Used to process pending jobs",
 			UsageText: "process [subcommand]",
 			Subcommands: []cli.Command{
-				cli.Command{
+				{
 					Name:        "jobs",
 					Category:    "Process",
 					Action:      dequeue.ProcessJobQueue,
@@ -91,7 +91,7 @@ func init() {
 					UsageText:   "jobs",
 					Description: "Work on items in the job queue. Will check for new jobs every 5s and loop until interrupted",
 				},
-				cli.Command{
+				{
 					Name:        "missing",
 					Category:    "Process",
 					Action:      dequeue.ProcessMissingKillmails,
@@ -99,7 +99,7 @@ func init() {
 					UsageText:   "jobs",
 					Description: "",
 				},
-				cli.Command{
+				{
 					Name:        "zkb",
 					Category:    "Process",
 					Action:      dequeue.ProcessMissingZKB,
@@ -109,13 +109,13 @@ func init() {
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:      "analyse",
 			Category:  "Analysis",
 			Usage:     "get info from the db",
 			UsageText: "analyse [subcommand]",
 			Subcommands: []cli.Command{
-				cli.Command{
+				{
 					Name:        "losses",
 					Category:    "Analysis",
 					Usage:       "count the sum of each shiptype lost",
@@ -123,7 +123,7 @@ func init() {
 					Description: "",
 					Action:      analytics.AggregateLosses,
 				},
-				cli.Command{
+				{
 					Name:        "killed",
 					Category:    "Analysis",
 					Usage:       "group by aggregate those killed by the entity",
@@ -133,13 +133,13 @@ func init() {
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name:      "report",
 			Category:  "Report",
 			Usage:     "Serve a html report of the given entity",
 			UsageText: "report [subcommand]",
 			Subcommands: []cli.Command{
-				cli.Command{
+				{
 					Name:        "alliance",
 					Category:    "Report",
 					Usage:       "alliance [allianceid]",

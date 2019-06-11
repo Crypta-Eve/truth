@@ -59,7 +59,7 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 
 	var ids []int
 
-	for k, _ := range idCount {
+	for k := range idCount {
 		ids = append(ids, k)
 	}
 
