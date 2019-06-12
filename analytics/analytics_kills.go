@@ -163,27 +163,21 @@ func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID i
 				idCount[id]++
 			}
 		case "ship":
-			temp := make(map[int]void)
-
 			for _, attacker := range mail.KillData.Attackers {
 				switch entityType {
 				case "alliance":
 					if attacker.AllianceID == entityID {
-						temp[attacker.ShipTypeID] = setter
+						idCount[attacker.ShipTypeID]++
 					}
 				case "corporation":
 					if attacker.CorporationID == entityID {
-						temp[attacker.ShipTypeID] = setter
+						idCount[attacker.ShipTypeID]++
 					}
 				case "character":
 					if attacker.CharacterID == entityID {
-						temp[attacker.ShipTypeID] = setter
+						idCount[attacker.ShipTypeID]++
 					}
 				}
-			}
-
-			for id := range temp {
-				idCount[id]++
 			}
 		case "system":
 			idCount[mail.KillData.SolarSystemID]++

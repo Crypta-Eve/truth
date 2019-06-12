@@ -3,11 +3,484 @@
 {{ template "header"}}
 
 <body>
-    {{ template "chart" }}
 
-    {{ template "chart" }}
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark justify-content-center">
+        <a class="navbar-brand" href="#">Eve Truth Alliance Report</a>
+    </nav>
+    <ul class="nav nav-tabs" id="headertabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" href="#corp" id="corp_tab" data-toggle="tab" role="tab" aria-controls="corp"
+                aria-selected="true">Corporations</a>
+        </li>
 
-    {{ . }}
+        <li class="nav-item">
+            <a class="nav-link" href="#pilot" id="pilot_tab" data-toggle="tab" role="tab" aria-controls="pilot"
+                aria-selected="false">Characters</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#ship" id="ship_tab" data-toggle="tab" role="tab" aria-controls="ship"
+                aria-selected="false">Ship</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#location" id="location_tab" data-toggle="tab" role="tab" aria-controls="location"
+                aria-selected="false">Location</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#tz" id="tz_tab" data-toggle="tab" role="tab" aria-controls="character"
+                aria-selected="false">TZ</a>
+        </li>
+    </ul>
+
+    <!-- Now show all out pretty graphs -->
+    <div class="container tab-content" id="tabcontent">
+        <div class="tab-pane fade show active" id="corp" role="tabpanel" aria-labelledby="corp_tab">
+
+            <!-- Corporation Section -->
+
+            <!-- Corp Kills Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="corp_kills_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('corp_kills_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .CorpKills.Labels }},
+                datasets: [
+                    {
+                        label: "Kills",
+                        backgroundColor: "#33dd33",
+                        data: {{ .CorpKills.Values }}
+                            },
+                ]
+                    },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Kills By Corporation'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+                });
+            </script>
+
+            <!-- Corp Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="corp_losses_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('corp_losses_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .CorpLosses.Labels }},
+                datasets: [
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .CorpLosses.Values }}
+                        },
+                ]
+                },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Losses By Corporation'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+            });
+            </script>
+
+        </div>
+
+        <div class="tab-pane fade" id="pilot" role="tabpanel" aria-labelledby="pilot_tab">
+            <!-- Character Section -->
+
+            <!-- Pilot Kills Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="pilot_kills_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('pilot_kills_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .PilotKills.Labels }},
+                datasets: [
+                    {
+                        label: "Kills",
+                        backgroundColor: "#33dd33",
+                        data: {{ .PilotKills.Values }}
+                    },
+                ]
+            },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Kills By Character'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+        });
+            </script>
+
+            <!-- Pilot Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="pilot_losses_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('pilot_losses_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .PilotLosses.Labels }},
+                datasets: [
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .PilotLosses.Values }}
+                },
+                ]
+        },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Losses By Character'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+    });
+            </script>
+        </div>
+
+        <div class="tab-pane fade" id="ship" role="tabpanel" aria-labelledby="ship_tab">
+            <!-- Ships Section -->
+
+            <!-- Ship Kills Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="ship_kills_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('ship_kills_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .ShipKillsWith.Labels }},
+                datasets: [
+                    {
+                        label: "Kills",
+                        backgroundColor: "#33dd33",
+                        data: {{ .ShipKillsWith.Values }}
+                        },
+                ]
+                },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Kills By Ship'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+            });
+            </script>
+
+            <!-- Ship Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="ship_losses_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('ship_losses_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .ShipLosses.Labels }},
+                datasets: [
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .ShipLosses.Values }}
+                    },
+                ]
+            },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Losses By Ship'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+        });
+            </script>
+        </div>
+
+        <div class="tab-pane fade" id="location" role="tabpanel" aria-labelledby="location_tab">
+            <!-- Location Section -->
+
+            <!-- Location Kills Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="location_kills_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('location_kills_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .LocationKills.Labels }},
+                datasets: [
+                    {
+                        label: "Kills",
+                        backgroundColor: "#33dd33",
+                        data: {{ .LocationKills.Values }}
+                            },
+                ]
+                    },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Kills By Location'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+                });
+            </script>
+
+            <!-- Location Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="location_losses_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('location_losses_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .LocationLosses.Labels }},
+                datasets: [
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .LocationLosses.Values }}
+                        },
+                ]
+                },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Losses By Location'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="tab-pane fade" id="tz" role="tabpanel" aria-labelledby="tz_tab">
+            <!-- TZ Section -->
+
+            <!-- TZ Kills Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="tz_kills_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('tz_kills_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .TZKills.Labels }},
+                datasets: [
+                    {
+                        label: "Kills",
+                        backgroundColor: "#33dd33",
+                        data: {{ .TZKills.Values }}
+                                },
+                ]
+                        },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Kills By Hour'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+                    });
+            </script>
+
+            <!-- TZ Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="tz_losses_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('tz_losses_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ .TZLosses.Labels }},
+                datasets: [
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .TZLosses.Values }}
+                            },
+                ]
+                    },
+                options: {
+                    title: {
+                        display: true,
+                            text: 'Losses By Hour'
+                    },
+                    maintainAspectRatio: false,
+                        scales: {
+                        yAxes: [{
+                            stacked: false,
+                            gridLines: {
+                                display: true,
+                                color: "rgba(0,0,0,0.1)"
+                            }
+                        }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                    }
+                }
+                });
+            </script>
+        </div>
+
+
+    </div>
+
 </body>
 
 {{ template "footer" }}

@@ -57,8 +57,6 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 
 	}
 
-	fmt.Println(len(idCount))
-
 	var ids []int
 
 	for k := range idCount {
