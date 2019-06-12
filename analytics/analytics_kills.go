@@ -78,3 +78,141 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 
 	return counts, nil
 }
+
+func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
+
+	filterField := ""
+
+	switch entityType {
+	case "alliance":
+		filterField = "killmail.attackers.alliance_id"
+	case "corporation":
+		filterField = "killmail.attackers.corporation_id"
+	case "character":
+		filterField = "killmail.attackers.character_id"
+	default:
+		return counts, errors.New("Invalid entityType got through.... This shouldnt happen")
+	}
+
+	filter := bson.M{
+		filterField: entityID,
+	}
+
+	mails, err := c.Store.GetData(filter)
+
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("failed to query database for filter - %v", filter))
+		return counts, err
+	}
+
+	c.Log.Printf("Found %v killmails to aggregate", len(mails))
+
+	//I am not happy about what follows, but am undecided on a better course of action
+
+	type void struct{}
+	var setter void
+
+	idCount := make(map[int]int)
+	for _, mail := range mails {
+		switch aggregate {
+		case "corporation":
+			temp := make(map[int]void)
+
+			for _, attacker := range mail.KillData.Attackers {
+				switch entityType {
+				case "alliance":
+					if attacker.AllianceID == entityID {
+						temp[attacker.CorporationID] = setter
+					}
+				case "corporation":
+					if attacker.CorporationID == entityID {
+						temp[attacker.CorporationID] = setter
+					}
+				case "character":
+					if attacker.CharacterID == entityID {
+						temp[attacker.CorporationID] = setter
+					}
+				}
+			}
+
+			for id := range temp {
+				idCount[id]++
+			}
+
+		case "character":
+			temp := make(map[int]void)
+
+			for _, attacker := range mail.KillData.Attackers {
+				switch entityType {
+				case "alliance":
+					if attacker.AllianceID == entityID {
+						temp[attacker.CharacterID] = setter
+					}
+				case "corporation":
+					if attacker.CorporationID == entityID {
+						temp[attacker.CharacterID] = setter
+					}
+				case "character":
+					if attacker.CharacterID == entityID {
+						temp[attacker.CharacterID] = setter
+					}
+				}
+			}
+
+			for id := range temp {
+				idCount[id]++
+			}
+		case "ship":
+			temp := make(map[int]void)
+
+			for _, attacker := range mail.KillData.Attackers {
+				switch entityType {
+				case "alliance":
+					if attacker.AllianceID == entityID {
+						temp[attacker.ShipTypeID] = setter
+					}
+				case "corporation":
+					if attacker.CorporationID == entityID {
+						temp[attacker.ShipTypeID] = setter
+					}
+				case "character":
+					if attacker.CharacterID == entityID {
+						temp[attacker.ShipTypeID] = setter
+					}
+				}
+			}
+
+			for id := range temp {
+				idCount[id]++
+			}
+		case "system":
+			idCount[mail.KillData.SolarSystemID]++
+		case "hour":
+			idCount[mail.KillData.KillmailTime.Hour()]++
+		default:
+			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system")
+		}
+
+	}
+
+	var ids []int
+
+	for k := range idCount {
+		ids = append(ids, k)
+	}
+
+	names, err := c.ResolveIDsToNames(ids)
+	if err != nil {
+		return counts, cli.NewExitError(err, 1)
+	}
+
+	out := make(map[string]int)
+
+	for id, count := range idCount {
+		out[names[id]] = count
+	}
+
+	counts = rankByValue(out)
+
+	return counts, nil
+}
