@@ -105,6 +105,15 @@ type (
 		Solo        bool    `json:"solo" bson:"solo"`
 		Awox        bool    `json:"awox" bson:"awox"`
 	}
+
+	WSSKillmail struct {
+		Attackers     []ESIAttacker `json:"attackers"`
+		KillmailID    int           `json:"killmail_id"`
+		KillmailTime  time.Time     `json:"killmail_time"`
+		SolarSystemID int           `json:"solar_system_id"`
+		Victim        ESIVictim     `json:"victim"`
+		ZKB           ZKBData       `json:"zkb"`
+	}
 )
 
 //List of all possible jobs

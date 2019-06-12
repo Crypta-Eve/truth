@@ -10,6 +10,7 @@ import (
 	"github.com/Crypta-Eve/truth/enqueue"
 	"github.com/Crypta-Eve/truth/reports"
 	"github.com/Crypta-Eve/truth/testconnect"
+	"github.com/Crypta-Eve/truth/wss"
 
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
@@ -104,6 +105,14 @@ func init() {
 					Category:    "Process",
 					Action:      dequeue.ProcessMissingZKB,
 					Usage:       "Make sure all kills have a zkb field",
+					UsageText:   "zkb",
+					Description: "",
+				},
+				{
+					Name:        "wss",
+					Category:    "Process",
+					Action:      wss.WholeWSS,
+					Usage:       "Monitor WSS for real time killmails",
 					UsageText:   "zkb",
 					Description: "",
 				},
