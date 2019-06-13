@@ -2,6 +2,7 @@ package analytics
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Crypta-Eve/truth/client"
 	"github.com/pkg/errors"
@@ -39,6 +40,13 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 	c.Log.Printf("Found %v killmails to aggregate", len(mails))
 
 	idCount := make(map[int]int)
+
+	if aggregate == "hour" {
+		for i := 0; i < 24; i++ {
+			idCount[i] = 0
+		}
+	}
+
 	for _, mail := range mails {
 		switch aggregate {
 		case "corporation":
@@ -55,6 +63,16 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system")
 		}
 
+	}
+
+	if aggregate == "hour" {
+		counts = make(PairList, len(idCount))
+
+		for k, v := range idCount{
+			counts[k] = Pair{Key:strconv.Itoa(k), Value:v}
+		}
+
+		return counts, nil
 	}
 
 	var ids []int

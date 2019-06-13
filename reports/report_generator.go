@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Crypta-Eve/truth/analytics"
 	"github.com/Crypta-Eve/truth/client"
@@ -63,6 +64,8 @@ func AllianceReportServer(c *cli.Context) error {
 	}
 
 	client.Log.Printf("Starting ReportGen for Alliance %v", allID)
+
+	startTime := time.Now()
 
 	data := AllianceReport{}
 
@@ -146,6 +149,10 @@ func AllianceReportServer(c *cli.Context) error {
 		}
 		t.ExecuteTemplate(w, "report", data)
 	})
+
+	endTime := time.Now()
+
+	client.Log.Printf("Time taken to process - %v", endTime.Sub(startTime))
 
 	client.Log.Print("Report ready on port 1080")
 	http.ListenAndServe(":1080", nil)
