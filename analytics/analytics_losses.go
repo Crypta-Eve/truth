@@ -68,8 +68,8 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 	if aggregate == "hour" {
 		counts = make(PairList, len(idCount))
 
-		for k, v := range idCount{
-			counts[k] = Pair{Key:strconv.Itoa(k), Value:v}
+		for k, v := range idCount {
+			counts[k] = Pair{Key: strconv.Itoa(k), Value: v}
 		}
 
 		return counts, nil

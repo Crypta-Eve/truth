@@ -1,25 +1,24 @@
 package wss
 
-import(
-
+import (
 	"strings"
 
 	"github.com/Crypta-Eve/truth/client"
 	"github.com/Crypta-Eve/truth/store"
 	"github.com/gorilla/websocket"
-	"github.com/urfave/cli"
 	"github.com/pkg/errors"
+	"github.com/urfave/cli"
 )
 
 const (
 	// The zkillboard wss url
-	address string = "wss://zkillboard.com:2096"
+	address          string = "wss://zkillboard.com:2096"
 	subscribeMessage string = "{\"action\":\"sub\", \"channel\":\"killstream\"}"
 )
 
 var (
 	newline = []byte{'\n'}
-	space = []byte{' '}
+	space   = []byte{' '}
 )
 
 func WholeWSS(c *cli.Context) error {
@@ -49,15 +48,15 @@ func WholeWSS(c *cli.Context) error {
 
 		var message store.WSSKillmail
 		err = ws.ReadJSON(&message)
-		if err != nil{
+		if err != nil {
 			return cli.NewExitError(errors.Wrap(err, "Error retreiving wss message"), 1)
 		}
 		idhash, km := convertKillmail(message)
-		client.Log.Printf("Recieved wss killmail - %#v", km.KillID)
+		client.Log.Printf("Received wss killmail - %#v", km.KillID)
 
 		err = client.Store.InsertKillIDHash(idhash)
 		if err != nil {
-			if strings.Contains(err.Error(), "dup key"){
+			if strings.Contains(err.Error(), "dup key") {
 				client.Log.Printf("Duplicate idhash ignored - %v", idhash.ID)
 				continue
 			}
@@ -66,7 +65,7 @@ func WholeWSS(c *cli.Context) error {
 
 		err = client.Store.InsertKillmail(km)
 		if err != nil {
-			if strings.Contains(err.Error(), "dup key"){
+			if strings.Contains(err.Error(), "dup key") {
 				client.Log.Printf("Duplicate killmail ignored - %v", idhash.ID)
 				continue
 			}
@@ -74,12 +73,10 @@ func WholeWSS(c *cli.Context) error {
 		}
 	}
 
-	return nil
-
 }
 
 func convertKillmail(w store.WSSKillmail) (idhash store.ScrapeQueue, km store.KillmailData) {
-	
+
 	out := store.KillmailData{}
 	esik := store.ESIKillmail{}
 

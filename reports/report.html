@@ -56,12 +56,17 @@
                         backgroundColor: "#33dd33",
                         data: {{ .CorpKills.Values }}
                             },
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .CorpLosses.Values }}
+                        },
                 ]
                     },
                 options: {
                     title: {
                         display: true,
-                            text: 'Kills By Corporation'
+                            text: 'Kills/Losses By Corporation'
                     },
                     maintainAspectRatio: false,
                         scales: {
@@ -393,28 +398,35 @@
         <div class="tab-pane fade" id="tz" role="tabpanel" aria-labelledby="tz_tab">
             <!-- TZ Section -->
 
-            <!-- TZ Kills Graph -->
+            <!-- TZ Kills / Losses Graph -->
             <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
                 <canvas id="tz_kills_chart" width="40" height="40" class="container"></canvas>
             </div>
             <script>
                 var ctx = document.getElementById('tz_kills_chart');
                 var myChart = new Chart(ctx, {
-                    type: 'bar',
+                    type: 'line',
                     data: {
                         labels: {{ .TZKills.Labels }},
                 datasets: [
                     {
                         label: "Kills",
                         backgroundColor: "#33dd33",
-                        data: {{ .TZKills.Values }}
+                        data: {{ .TZKills.Values }},
+                    fill: false
                                 },
+                    {
+                        label: "Losses",
+                        backgroundColor: "#ff3333",
+                        data: {{ .TZLosses.Values }},
+                    fill: false
+                            },
                 ]
                         },
                 options: {
                     title: {
                         display: true,
-                            text: 'Kills By Hour'
+                            text: 'Kills/Losses By UTC Hour'
                     },
                     maintainAspectRatio: false,
                         scales: {
@@ -433,48 +445,6 @@
                     }
                 }
                     });
-            </script>
-
-            <!-- TZ Losses Graph -->
-            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
-                <canvas id="tz_losses_chart" width="40" height="40" class="container"></canvas>
-            </div>
-            <script>
-                var ctx = document.getElementById('tz_losses_chart');
-                var myChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: {{ .TZLosses.Labels }},
-                datasets: [
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .TZLosses.Values }}
-                            },
-                ]
-                    },
-                options: {
-                    title: {
-                        display: true,
-                            text: 'Losses By Hour'
-                    },
-                    maintainAspectRatio: false,
-                        scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
-                            xAxes: [{
-                                gridLines: {
-                                    display: false
-                                }
-                            }]
-                    }
-                }
-                });
             </script>
         </div>
 

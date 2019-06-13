@@ -68,8 +68,8 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 	if aggregate == "hour" {
 		counts = make(PairList, len(idCount))
 
-		for k, v := range idCount{
-			counts[k] = Pair{Key:strconv.Itoa(k), Value:v}
+		for k, v := range idCount {
+			counts[k] = Pair{Key: strconv.Itoa(k), Value: v}
 		}
 
 		return counts, nil
@@ -217,8 +217,8 @@ func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID i
 	if aggregate == "hour" {
 		counts = make(PairList, len(idCount))
 
-		for k, v := range idCount{
-			counts[k] = Pair{Key:strconv.Itoa(k), Value:v}
+		for k, v := range idCount {
+			counts[k] = Pair{Key: strconv.Itoa(k), Value: v}
 		}
 
 		return counts, nil
