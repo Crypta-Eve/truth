@@ -114,7 +114,7 @@ func ProcessMissingKillmails(c *cli.Context) error {
 
 			if err != nil {
 				if strings.Contains(err.Error(), "dup key") {
-					client.Log.Printf("Duplicate killmail ignored - %v", idhash.ID)
+					client.Log.Printf("Duplicate killmail ignored - %v", mail.ID)
 					continue
 				}
 				return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
@@ -238,7 +238,7 @@ func scrapePlayer(c *client.Client, job store.Queue) error {
 		err := c.Store.InsertKillIDHash(mailIDHash)
 		if err != nil {
 			if strings.Contains(err.Error(), "dup key") {
-				c.Log.Printf("Duplicate killmail ignored - %v", idhash.ID)
+				c.Log.Printf("Duplicate killmail hash ignored - %v", mailIDHash.ID)
 				continue
 			} else {
 				return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
