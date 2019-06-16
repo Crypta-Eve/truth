@@ -101,8 +101,8 @@ func ProcessMissingKillmails(c *cli.Context) error {
 
 		numMissing := len(missingMails)
 		if numMissing == 0 {
-			client.Log.Println("No missing killmails, sleeping for 5s")
-			time.Sleep(5 * time.Second)
+			client.Log.Println("No missing killmails, sleeping...")
+			time.Sleep(1 * time.Minute)
 			continue
 		}
 
@@ -147,7 +147,7 @@ func ProcessMissingZKB(c *cli.Context) error {
 		numMissing := len(ids)
 		if numMissing == 0 {
 			client.Log.Println("No missing zkb, sleeping for 5s")
-			time.Sleep(5 * time.Second)
+			time.Sleep(1 * time.Minute)
 			continue
 		}
 
