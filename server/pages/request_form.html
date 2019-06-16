@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Eve Truth Report Request</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"
+        integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
+
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark justify-content-center">
+        <a class="navbar-brand" href="#">Eve Truth Report Request Form</a>
+    </nav>
+
+    <div class="container">
+
+        <form>
+            <!-- ESI ID ranges - https://gist.github.com/a-tal/5ff5199fdbeb745b77cb633b7f4400bb -->
+            <div class="form-group">
+                <label for="entityFilter">Entity ID</label>
+                <input type="text" class="form-control" id="entityFilter" placeholder="99001099">
+            </div>
+            <div class="form-group">
+                <label for="entityType">Entity Type Select</label>
+                <select class="form-control" id="entityType">
+                    <option>Alliance</option>
+                    <option>Corporation</option>
+                    <option>Character</option>
+                    <option>Solar System</option>
+                    <option>Region</option>
+                    <option>Faction</option>
+                    <option>Ship</option>
+                    <option>Group</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+            </div>
+            
+            <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Submit">
+                <input type="reset">
+            </div>
+        </form>
+
+    </div>
+</body>

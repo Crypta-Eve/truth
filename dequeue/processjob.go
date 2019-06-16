@@ -51,7 +51,7 @@ func ProcessJobQueue(c *cli.Context) error {
 
 		switch job.ID {
 		case store.JobScrapeCharacter, store.JobScrapeCorporation, store.JobScrapeAlliance:
-			err := scrapeCharacter(client, job)
+			err := scrapePlayer(client, job)
 			if err != nil {
 				err = errors.Wrap(err, fmt.Sprintf("Error running zkill scrape for character job - %+v", job))
 				client.Log.Println(err)
@@ -111,8 +111,13 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		for i, mail := range missingMails {
 			client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
 			err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
+
 			if err != nil {
-				client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+				if strings.Contains(err.Error(), "dup key") {
+					client.Log.Printf("Duplicate killmail ignored - %v", idhash.ID)
+					continue
+				}
+				return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
 			}
 		}
 
@@ -157,7 +162,7 @@ func ProcessMissingZKB(c *cli.Context) error {
 	}
 }
 
-func scrapeCharacter(c *client.Client, job store.Queue) error {
+func scrapePlayer(c *client.Client, job store.Queue) error {
 
 	//Grab the charID from args. Atm we do not support date ranges
 	charID, err := strconv.Atoi(strings.Split(job.Args, "|")[0])
@@ -230,7 +235,15 @@ func scrapeCharacter(c *client.Client, job store.Queue) error {
 
 		mailIDHash := store.ScrapeQueue{ID: mail.Killmail_id, Hash: mail.Zkb.Hash}
 
-		c.Store.InsertKillIDHash(mailIDHash)
+		err := c.Store.InsertKillIDHash(mailIDHash)
+		if err != nil {
+			if strings.Contains(err.Error(), "dup key") {
+				c.Log.Printf("Duplicate killmail ignored - %v", idhash.ID)
+				continue
+			} else {
+				return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
+			}
+		}
 
 	}
 

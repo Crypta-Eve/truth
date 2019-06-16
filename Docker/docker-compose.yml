@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  wss:
+    build: .
+    command: "process wss"
+    container_name: truth-wss
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
+
+  jobs:
+    build: .
+    command: "process jobs"
+    container_name: truth-jobs
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
+
+  missing:
+    build: .
+    command: "process missing"
+    container_name: truth-missing
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
+
+  zkb:
+    build: .
+    command: "process zkb"
+    container_name: truth-zkb
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
+
