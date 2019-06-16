@@ -14,8 +14,6 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
-
-	"github.com/pkg/profile"
 )
 
 var app *cli.App
@@ -180,8 +178,6 @@ func init() {
 }
 
 func main() {
-
-	defer profile.Start().Stop()
 
 	err := app.Run(os.Args)
 	if err != nil {

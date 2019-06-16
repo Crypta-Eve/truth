@@ -68,6 +68,7 @@ func ProcessJobQueue(c *cli.Context) error {
 }
 
 func ProcessMissingKillmails(c *cli.Context) error {
+
 	client, err := client.New()
 
 	if err != nil {
@@ -75,39 +76,47 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		return cli.NewExitError(err, 1)
 	}
 
-	ids, err := client.Store.ListAllExistingIDs()
+	for {
 
-	client.Log.Printf("Found %v existing killmail ids", len(ids))
+		ids, err := client.Store.ListAllExistingIDs()
 
-	if err != nil {
-		err = errors.Wrap(err, "Failed to get list of all existing killmails")
-		return cli.NewExitError(err, 1)
+		client.Log.Printf("Found %v existing killmail ids", len(ids))
 
-	}
-
-	// Now to build the massive request that will tell us what we are missing
-	var IDList []int
-	for _, v := range ids {
-		IDList = append(IDList, v)
-	}
-
-	missingMails, err := client.Store.GetKillsNotInList(IDList)
-	if err != nil {
-		return cli.NewExitError(errors.Wrap(err, "Failed to get kills that are not in list"), 1)
-	}
-
-	numMissing := len(missingMails)
-	client.Log.Printf("Have %v killmails to fetch", numMissing)
-
-	for i, mail := range missingMails {
-		client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
-		err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
 		if err != nil {
-			client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
-		}
-	}
+			err = errors.Wrap(err, "Failed to get list of all existing killmails")
+			return cli.NewExitError(err, 1)
 
-	return nil
+		}
+
+		// Now to build the massive request that will tell us what we are missing
+		var IDList []int
+		for _, v := range ids {
+			IDList = append(IDList, v)
+		}
+
+		missingMails, err := client.Store.GetKillsNotInList(IDList)
+		if err != nil {
+			return cli.NewExitError(errors.Wrap(err, "Failed to get kills that are not in list"), 1)
+		}
+
+		numMissing := len(missingMails)
+		if numMissing == 0 {
+			client.Log.Println("No missing killmails, sleeping for 5s")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		client.Log.Printf("Have %v killmails to fetch", numMissing)
+
+		for i, mail := range missingMails {
+			client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+			err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
+			if err != nil {
+				client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+			}
+		}
+
+	}
 }
 
 func ProcessMissingZKB(c *cli.Context) error {
@@ -118,27 +127,34 @@ func ProcessMissingZKB(c *cli.Context) error {
 		return cli.NewExitError(err, 1)
 	}
 
-	ids, err := client.Store.GetKillsMissingZKB()
+	for {
 
-	client.Log.Printf("Found %v killmails that need updating", len(ids))
+		ids, err := client.Store.GetKillsMissingZKB()
 
-	if err != nil {
-		err = errors.Wrap(err, "Failed to get list of killmails that are short zkb")
-		return cli.NewExitError(err, 1)
+		client.Log.Printf("Found %v killmails that need updating", len(ids))
 
-	}
-
-	numMissing := len(ids)
-
-	for i, mail := range ids {
-		client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
-		err := client.FetchAndInsertZKB(mail.ID)
 		if err != nil {
-			client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
-		}
-	}
+			err = errors.Wrap(err, "Failed to get list of killmails that are short zkb")
+			return cli.NewExitError(err, 1)
 
-	return nil
+		}
+
+		numMissing := len(ids)
+		if numMissing == 0 {
+			client.Log.Println("No missing zkb, sleeping for 5s")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		for i, mail := range ids {
+			client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+			err := client.FetchAndInsertZKB(mail.ID)
+			if err != nil {
+				client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+			}
+		}
+
+	}
 }
 
 func scrapeCharacter(c *client.Client, job store.Queue) error {
