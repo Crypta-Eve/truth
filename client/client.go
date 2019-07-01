@@ -35,7 +35,7 @@ func New() (*Client, error) {
 
 	return &Client{
 		HTTP: &http.Client{
-			Timeout: time.Second * 30,
+			Timeout: time.Second * 40,
 		},
 		Store:     store,
 		Log:       logger,

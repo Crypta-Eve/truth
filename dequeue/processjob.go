@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Crypta-Eve/truth/client"
@@ -53,7 +54,15 @@ func ProcessJobQueue(c *cli.Context) error {
 		case store.JobScrapeCharacter, store.JobScrapeCorporation, store.JobScrapeAlliance:
 			err := scrapePlayer(client, job)
 			if err != nil {
-				err = errors.Wrap(err, fmt.Sprintf("Error running zkill scrape for character job - %+v", job))
+				err = errors.Wrap(err, fmt.Sprintf("Error running zkill scrape for job - %+v", job))
+				client.Log.Println(err)
+				continue
+			}
+
+		case store.JobScrapeDaily:
+			err := scrapeHistory(client, job)
+			if err != nil {
+				err = errors.Wrap(err, fmt.Sprintf("Error running zkill scrape for daily job - %+v", job))
 				client.Log.Println(err)
 				continue
 			}
@@ -102,24 +111,86 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		numMissing := len(missingMails)
 		if numMissing == 0 {
 			client.Log.Println("No missing killmails, sleeping...")
-			time.Sleep(1 * time.Minute)
+			time.Sleep(5 * time.Minute)
 			continue
 		}
 
 		client.Log.Printf("Have %v killmails to fetch", numMissing)
 
-		for i, mail := range missingMails {
-			client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
-			err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
+		batchSize := 20
 
-			if err != nil {
-				if strings.Contains(err.Error(), "dup key") {
-					client.Log.Printf("Duplicate killmail ignored - %v", mail.ID)
-					continue
+		switch {
+		case numMissing < 50:
+
+			for i, mail := range missingMails {
+				client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+				err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
+
+				if err != nil {
+					if strings.Contains(err.Error(), "dup key") {
+						client.Log.Printf("Duplicate killmail ignored - %v", mail.ID)
+						continue
+					}
+					return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
 				}
-				return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
 			}
+			return nil
+
+		case numMissing >= 50 && numMissing < 200:
+			batchSize = 50
+		case numMissing >= 200 && numMissing < 1000:
+			batchSize = 200
+		case numMissing >= 1000 && numMissing < 10000:
+			batchSize = 1000
+		default:
+			batchSize = 2000
 		}
+
+		client.Log.Printf("Batch Size is %v", batchSize)
+
+		var batches [][]store.ScrapeQueue
+
+		for batchSize < len(missingMails) {
+			missingMails, batches = missingMails[batchSize:], append(batches, missingMails[0:batchSize:batchSize])
+		}
+
+		batches = append(batches, missingMails)
+
+		// for _, batch := range batches {
+		// 	fmt.Println(batch)
+		// }
+
+		var waitgroup sync.WaitGroup
+
+		for i, batch := range batches {
+			waitgroup.Add(1)
+
+			btch := batch
+			i1 := i
+			go func() {
+				client.Log.Printf("Starting sub process %v", i1)
+				// client.Log.Printf("Sub Process Batch -  %v", btch)
+				amount := len(btch)
+				for j, mail := range btch {
+					client.Log.Printf("%d - Processing mail %d/%d - %d", i1, j, amount, mail.ID)
+					err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
+					if err != nil {
+						if strings.Contains(err.Error(), "dup key") {
+							client.Log.Printf("%d - Duplicate killmail ignored - %v", i1, mail.ID)
+							continue
+						}
+						client.Log.Printf("err: %v", err)
+					}
+				}
+
+				waitgroup.Done()
+				client.Log.Printf("Subprocess %v done!", i1)
+			}()
+		}
+
+		waitgroup.Wait()
+
+		client.Log.Println("Job Complete")
 
 	}
 }
@@ -151,14 +222,67 @@ func ProcessMissingZKB(c *cli.Context) error {
 			continue
 		}
 
-		for i, mail := range ids {
-			client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
-			err := client.FetchAndInsertZKB(mail.ID)
-			if err != nil {
-				client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+		// Lets batch these out, for the case where we have bulk missing zkbs....... Sorry Squizz for hammer.....
+
+		batchSize := 20
+
+		switch {
+		case numMissing < 50:
+
+			for i, mail := range ids {
+				client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+				err := client.FetchAndInsertZKB(mail.ID)
+				if err != nil {
+					client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+				}
 			}
+
+			return nil
+		case numMissing >= 50 && numMissing < 200:
+			batchSize = 50
+		case numMissing >= 200 && numMissing < 1000:
+			batchSize = 200
+		case numMissing >= 1000 && numMissing < 10000:
+			batchSize = 1000
+		default:
+			batchSize = 2000
 		}
 
+		var batches [][]store.ScrapeQueue
+
+		for batchSize < len(ids) {
+			ids, batches = ids[batchSize:], append(batches, ids[0:batchSize:batchSize])
+		}
+
+		batches = append(batches, ids)
+
+		var waitgroup sync.WaitGroup
+
+		for i, batch := range batches {
+			waitgroup.Add(1)
+
+			btch := batch
+			i1 := i
+			go func() {
+				client.Log.Printf("Starting sub process %v", i1)
+				// client.Log.Printf("Sub Process Batch -  %v", btch)
+				amount := len(btch)
+				for j, mail := range btch {
+					client.Log.Printf("Processing mail %d/%d - %d", j, amount, mail.ID)
+					err := client.FetchAndInsertZKB(mail.ID)
+					if err != nil {
+						client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+					}
+				}
+
+				waitgroup.Done()
+				client.Log.Printf("Subprocess %v done!", i1)
+			}()
+		}
+
+		waitgroup.Wait()
+
+		client.Log.Println("Job Complete")
 	}
 }
 
@@ -248,6 +372,143 @@ func scrapePlayer(c *client.Client, job store.Queue) error {
 	}
 
 	c.Store.MarkJobComplete(job)
+
+	return nil
+
+}
+
+func scrapeHistory(c *client.Client, job store.Queue) error {
+
+	layout := "20060102"
+
+	start, _ := time.Parse(layout, (strings.Split(job.Args, "|")[0]))
+	end, _ := time.Parse(layout, (strings.Split(job.Args, "|")[1]))
+
+	days := int(end.Sub(start).Hours()/24) + 1
+	c.Log.Printf("History Scrape across %v days", days)
+
+	const maxprocs = 10
+
+	switch {
+	case days >= 0 && days < 10:
+		for i := 0; i < days; i++ {
+			dt := start.Add(time.Duration(i*24) * time.Hour)
+			err := scrapeDaily(c, dt.Format("20060102"))
+			if err != nil {
+				c.Log.Println(err)
+				continue
+			}
+		}
+		c.Store.MarkJobComplete(job)
+
+	case days > 10:
+
+		dates := make([]string, days)
+
+		for i := 0; i < days; i++ {
+			dt := start.Add(time.Duration(i*24) * time.Hour)
+			dates[i] = dt.Format("20060102")
+		}
+
+		var batches [][]string
+
+		for maxprocs < len(dates) {
+			dates, batches = dates[maxprocs:], append(batches, dates[0:maxprocs:maxprocs])
+		}
+
+		batches = append(batches, dates)
+
+		// Now we can spawn multiple routines to scrape it all!
+
+		var waitgroup sync.WaitGroup
+
+		for i, batch := range batches {
+			waitgroup.Add(1)
+
+			btch := batch
+			i1 := i
+			go func() {
+				c.Log.Printf("Starting sub process %v", i1)
+				c.Log.Printf("Sub Process Batch -  %v", btch)
+				for _, day := range btch {
+					err := scrapeDaily(c, day)
+					if err != nil {
+						c.Log.Println(errors.Wrap(err, fmt.Sprintf("Failed to scrape a historical day %v. In multi process.", day)))
+					}
+				}
+
+				waitgroup.Done()
+				c.Log.Printf("Subprocess %v done!", i1)
+			}()
+		}
+
+		waitgroup.Wait()
+
+		c.Log.Println("Job Complete")
+
+		c.Store.MarkJobComplete(job)
+	}
+
+	return nil
+}
+
+func scrapeDaily(c *client.Client, date string) error {
+	apiURL := "https://zkillboard.com/api/history/%v/"
+
+	urlToHit := fmt.Sprintf(apiURL, date)
+
+	req, err := http.NewRequest(http.MethodGet, urlToHit, nil)
+	if err != nil {
+		return errors.Wrap(err, "Failed to build daily zkill request")
+	}
+
+	req.Header.Set("User-Agent", c.UserAgent)
+
+	res, err := c.HTTP.Do(req)
+
+	if err != nil {
+		return errors.Wrap(err, "Failed to complete daily zkill request")
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return errors.Wrap(err, "Failed to read daily response")
+	}
+
+	defer res.Body.Close()
+
+	pageResponse := make(map[string]string, 0)
+
+	err = json.Unmarshal(body, &pageResponse)
+
+	if err != nil {
+		return err
+	}
+
+	for k, v := range pageResponse {
+		if k == " day" {
+			// there is a a day key in there.....
+			continue
+		}
+
+		// Now to sanity check, the killID should be an int, the hash should be 40 characters long...
+		// This will fail semi silently....
+		killID, err := strconv.Atoi(k)
+		if err != nil || len(v) != 40 {
+			c.Log.Printf("Invalid response from zkill history api. %v, %v.\n", k, v)
+			continue
+		}
+
+		ins := store.ScrapeQueue{ID: killID, Hash: v}
+		err = c.Store.InsertKillIDHash(ins)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate") {
+				continue
+			}
+			c.Log.Println(err)
+			continue
+		}
+	}
 
 	return nil
 

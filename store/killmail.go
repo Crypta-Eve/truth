@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -45,11 +47,13 @@ func (db *DB) ListAllExistingIDs() (ids []int, err error) {
 
 	defer c.Close(ctx)
 
+	start := time.Now()
+
 	for c.Next(ctx) {
 
 		type fetchid struct {
-			Id       int      `bson:"_id"`
-			Killmail bson.Raw `bson:"killmail"`
+			ID       int      `bson:"_id"`
+			// Killmail bson.Raw `bson:"killmail"`
 		}
 
 		var id fetchid
@@ -59,9 +63,10 @@ func (db *DB) ListAllExistingIDs() (ids []int, err error) {
 			return ids, errors.Wrap(err, "Failed to morp killmail into struct")
 		}
 
-		ids = append(ids, id.Id)
+		ids = append(ids, id.ID)
 	}
 
+	fmt.Printf("Cursor took %vs\n", time.Now().Sub(start).Seconds())
 	return ids, nil
 }
 
@@ -104,8 +109,15 @@ func (db *DB) GetKillsMissingZKB() (hashes []ScrapeQueue, err error) {
 	collection := db.Database.Database("truth").Collection("killmails")
 
 	filter := bson.M{
-		"zkb": bson.M{
-			"$exists": false,
+		"$or": []bson.M{
+			bson.M{
+				"zkb": bson.M{
+					"$exists": false,
+				},
+			},
+			bson.M{
+				"zkb.hash": "",
+			},
 		},
 	}
 

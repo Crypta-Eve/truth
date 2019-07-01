@@ -44,7 +44,7 @@ type (
 	KillmailData struct {
 		KillID   int         `json:"_id" bson:"_id"`
 		KillData ESIKillmail `json:"killmail" bson:"killmail"`
-		ZKBData  ZKBData     `json:"zkb" bson:"zkb"`
+		ZKBData  ZKBData     `json:"zkb,omitempty" bson:"zkb,omitempty"`
 	}
 
 	ESIKillmail struct {
@@ -121,4 +121,5 @@ const (
 	JobScrapeCharacter   = 1
 	JobScrapeCorporation = 2
 	JobScrapeAlliance    = 3
+	JobScrapeDaily       = 4
 )

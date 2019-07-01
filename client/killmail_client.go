@@ -55,7 +55,7 @@ func (client *Client) FetchAndInsertZKB(id int) error {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 
 	if err != nil {
-		return errors.Wrap(err, "Failed to buid esi killmail request")
+		return errors.Wrap(err, "Failed to buid zkb killmail request")
 	}
 
 	req.Header.Set("User-Agent", client.UserAgent)
@@ -63,19 +63,19 @@ func (client *Client) FetchAndInsertZKB(id int) error {
 	res, err := client.HTTP.Do(req)
 
 	if err != nil {
-		return errors.Wrap(err, "Failed to make esi killmail request")
+		return errors.Wrap(err, "Failed to make zkb killmail request")
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 
 	if err != nil {
-		return errors.Wrap(err, "Failed to read response from esi killmail request")
+		return errors.Wrap(err, "Failed to read response from zkb killmail request")
 	}
 	km := []store.ZKBResponse{}
 	err = json.Unmarshal(body, &km)
 	if err != nil {
-		return errors.Wrap(err, "Error morphing esi killmail into struct")
+		return errors.Wrap(err, fmt.Sprintf("Error morphing zkb killmail into struct data: \"%v\"", string(body)))
 	}
 
 	// Select the record to update with the zkb field

@@ -50,7 +50,6 @@ func init() {
 					UsageText:   "character [charid] (optional [startdate] [enddate])",
 					Description: "Queue a character scrape",
 				},
-
 				{
 					Name:        "corporation",
 					Category:    "Queue",
@@ -59,7 +58,6 @@ func init() {
 					UsageText:   "character [corpid] (optional [startdate] [enddate])",
 					Description: "Queue a corp scrape",
 				},
-
 				{
 					Name:        "alliance",
 					Category:    "Queue",
@@ -67,6 +65,14 @@ func init() {
 					Usage:       "Handles queuing of alliance scrapes",
 					UsageText:   "character [allianceid] (optional [startdate] [enddate])",
 					Description: "Queue an alliance scrape",
+				},
+				{
+					Name:        "history",
+					Category:    "Queue",
+					Action:      enqueue.ScrapeHistoryJob,
+					Usage:       "Handles queuing of daily scrapes",
+					UsageText:   "histroy startdate enddate",
+					Description: "Queue a historical scrape. date format it YYYYMMDD",
 				},
 			},
 		},
@@ -179,6 +185,7 @@ func init() {
 
 func main() {
 
+	// defer profile.Start().Stop()
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
