@@ -162,6 +162,8 @@ $RECYCLE.BIN/
 
 # Start custom ignores
 
+main
+
 #ignore the env file
 cmd/cli/env.json
 env.json

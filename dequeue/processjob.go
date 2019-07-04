@@ -208,7 +208,7 @@ func ProcessMissingZKB(c *cli.Context) error {
 
 		// Lets batch these out, for the case where we have bulk missing zkbs....... Sorry Squizz for hammer.....
 
-		numThreads := 1000
+		numThreads := 50
 
 		if numMissing < numThreads {
 
@@ -245,10 +245,10 @@ func ProcessMissingZKB(c *cli.Context) error {
 				// client.Log.Printf("Sub Process Batch -  %v", btch)
 				amount := len(btch)
 				for j, mail := range btch {
-					client.Log.Printf("Processing mail %d/%d - %d", j, amount, mail.ID)
+					client.Log.Printf("Processing zkb %d/%d - %d", j, amount, mail.ID)
 					err := client.FetchAndInsertZKB(mail.ID)
 					if err != nil {
-						client.Log.Println(errors.Wrap(err, "Error trying to create new killmail"))
+						client.Log.Println(errors.Wrap(err, "Error trying to create new zkb"))
 					}
 				}
 

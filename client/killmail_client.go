@@ -29,6 +29,10 @@ func (client *Client) FetchAndInsertKillmail(id int, hash string) error {
 		return errors.Wrap(err, "Failed to make esi killmail request")
 	}
 
+	if res.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("Bad code from ESI - %v", res.StatusCode))
+	}
+
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 
@@ -72,6 +76,11 @@ func (client *Client) FetchAndInsertZKB(id int) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to read response from zkb killmail request")
 	}
+
+	if res.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("Bad code from zkb - %v - %s", res.StatusCode, string(body)))
+	}
+
 	km := []store.ZKBResponse{}
 	err = json.Unmarshal(body, &km)
 	if err != nil {
