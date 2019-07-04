@@ -19,11 +19,20 @@ type (
 		// Queue management
 		InsertQueueJob(job Queue) error
 		PopQueueJob() (job Queue, err error)
-		ListAllExistingIDs() (ids []int, err error)
-		GetKillsNotInList(existing []int) (hashes []ScrapeQueue, err error)
-		GetKillsMissingZKB() (hashes []ScrapeQueue, err error)
 		MaintainJobReservation(job Queue, time time.Time) error
 		MarkJobComplete(job Queue) error
+
+		// Killmail Maint
+		ListAllExistingIDs() (ids []int, err error)
+		ListAllExistingKillmails() (mails []KillmailData, err error)
+		ListMissingKillmails() (mails []ScrapeQueue, err error)
+		GetKillsMissingZKB() (hashes []ScrapeQueue, err error)
+		UpdateManyHashes(hashes []ScrapeQueue) error
+
+		// SetupTasks
+		ListDatabaseNames() ([]string, error)
+		SeedDB() error
+		AddIndexes() error
 	}
 
 	Queue struct {
@@ -118,6 +127,7 @@ type (
 
 //List of all possible jobs
 const (
+	JobSeedDatabase      = 13270
 	JobScrapeCharacter   = 1
 	JobScrapeCorporation = 2
 	JobScrapeAlliance    = 3

@@ -51,6 +51,11 @@ func ProcessJobQueue(c *cli.Context) error {
 		// Job available, lets go to work
 
 		switch job.ID {
+		case store.JobSeedDatabase:
+			//Really this never should be hit... Mark it complete so it shouldnt get hit again.
+			client.Store.MarkJobComplete(job)
+			continue
+
 		case store.JobScrapeCharacter, store.JobScrapeCorporation, store.JobScrapeAlliance:
 			err := scrapePlayer(client, job)
 			if err != nil {
@@ -87,23 +92,7 @@ func ProcessMissingKillmails(c *cli.Context) error {
 
 	for {
 
-		ids, err := client.Store.ListAllExistingIDs()
-
-		client.Log.Printf("Found %v existing killmail ids", len(ids))
-
-		if err != nil {
-			err = errors.Wrap(err, "Failed to get list of all existing killmails")
-			return cli.NewExitError(err, 1)
-
-		}
-
-		// Now to build the massive request that will tell us what we are missing
-		var IDList []int
-		for _, v := range ids {
-			IDList = append(IDList, v)
-		}
-
-		missingMails, err := client.Store.GetKillsNotInList(IDList)
+		missingMails, err := client.Store.ListMissingKillmails()
 		if err != nil {
 			return cli.NewExitError(errors.Wrap(err, "Failed to get kills that are not in list"), 1)
 		}
@@ -117,13 +106,14 @@ func ProcessMissingKillmails(c *cli.Context) error {
 
 		client.Log.Printf("Have %v killmails to fetch", numMissing)
 
-		batchSize := 20
+		time.Sleep(10 * time.Second)
 
-		switch {
-		case numMissing < 50:
+		const numThreads = 1000
+
+		if numMissing < numThreads {
 
 			for i, mail := range missingMails {
-				client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
+				client.Log.Printf("Processing mail %d/%d - %d", i+1, numMissing, mail.ID)
 				err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
 
 				if err != nil {
@@ -135,16 +125,9 @@ func ProcessMissingKillmails(c *cli.Context) error {
 				}
 			}
 			return nil
-
-		case numMissing >= 50 && numMissing < 200:
-			batchSize = 50
-		case numMissing >= 200 && numMissing < 1000:
-			batchSize = 200
-		case numMissing >= 1000 && numMissing < 10000:
-			batchSize = 1000
-		default:
-			batchSize = 2000
 		}
+
+		batchSize := (numMissing / numThreads) + 1
 
 		client.Log.Printf("Batch Size is %v", batchSize)
 
@@ -172,7 +155,7 @@ func ProcessMissingKillmails(c *cli.Context) error {
 				// client.Log.Printf("Sub Process Batch -  %v", btch)
 				amount := len(btch)
 				for j, mail := range btch {
-					client.Log.Printf("%d - Processing mail %d/%d - %d", i1, j, amount, mail.ID)
+					client.Log.Printf("%d - Processing mail %d/%d - %d", i1, j+1, amount, mail.ID)
 					err := client.FetchAndInsertKillmail(mail.ID, mail.Hash)
 					if err != nil {
 						if strings.Contains(err.Error(), "dup key") {
@@ -193,6 +176,7 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		client.Log.Println("Job Complete")
 
 	}
+
 }
 
 func ProcessMissingZKB(c *cli.Context) error {
@@ -224,10 +208,9 @@ func ProcessMissingZKB(c *cli.Context) error {
 
 		// Lets batch these out, for the case where we have bulk missing zkbs....... Sorry Squizz for hammer.....
 
-		batchSize := 20
+		numThreads := 1000
 
-		switch {
-		case numMissing < 50:
+		if numMissing < numThreads {
 
 			for i, mail := range ids {
 				client.Log.Printf("Processing mail %d/%d - %d", i, numMissing, mail.ID)
@@ -238,17 +221,11 @@ func ProcessMissingZKB(c *cli.Context) error {
 			}
 
 			return nil
-		case numMissing >= 50 && numMissing < 200:
-			batchSize = 50
-		case numMissing >= 200 && numMissing < 1000:
-			batchSize = 200
-		case numMissing >= 1000 && numMissing < 10000:
-			batchSize = 1000
-		default:
-			batchSize = 2000
 		}
 
 		var batches [][]store.ScrapeQueue
+
+		batchSize := (numMissing / numThreads) + 1
 
 		for batchSize < len(ids) {
 			ids, batches = ids[batchSize:], append(batches, ids[0:batchSize:batchSize])

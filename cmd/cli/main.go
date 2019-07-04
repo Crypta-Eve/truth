@@ -12,6 +12,7 @@ import (
 	"github.com/Crypta-Eve/truth/testconnect"
 	"github.com/Crypta-Eve/truth/wss"
 
+	// "github.com/pkg/profile"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
@@ -122,6 +123,14 @@ func init() {
 					UsageText:   "zkb",
 					Description: "",
 				},
+				{
+					Name:        "hashmaint",
+					Category:    "Process",
+					Action:      dequeue.HashTableMaint,
+					Usage:       "Maintain Hashes",
+					UsageText:   "hashmaint",
+					Description: "",
+				},
 			},
 		},
 		{
@@ -171,6 +180,14 @@ func init() {
 					Action:      reports.AllianceReportServer,
 				},
 			},
+		},
+		{
+			Name:        "setup",
+			Category:    "Setup",
+			Usage:       "Setup",
+			UsageText:   "Setup the systems",
+			Action:      enqueue.PerformSetup,
+			Description: "This will ensure everything is set up correctly",
 		},
 	}
 
