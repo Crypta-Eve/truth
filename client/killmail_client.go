@@ -15,29 +15,10 @@ func (client *Client) FetchAndInsertKillmail(id int, hash string) error {
 
 	url := fmt.Sprintf("https://esi.evetech.net/v1/killmails/%v/%v/", id, hash)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	body, err := client.MakeESIGet(url)
 
 	if err != nil {
-		return errors.Wrap(err, "Failed to buid esi killmail request")
-	}
-
-	req.Header.Set("User-Agent", client.UserAgent)
-
-	res, err := client.HTTP.Do(req)
-
-	if err != nil {
-		return errors.Wrap(err, "Failed to make esi killmail request")
-	}
-
-	if res.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Bad code from ESI - %v", res.StatusCode))
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-
-	if err != nil {
-		return errors.Wrap(err, "Failed to read response from esi killmail request")
+		return errors.Wrap(err, fmt.Sprintf("Failed to query esi killmail id: %v | %v", id, hash))
 	}
 	km := store.ESIKillmail{}
 	err = json.Unmarshal(body, &km)
@@ -56,29 +37,9 @@ func (client *Client) FetchAndInsertZKB(id int) error {
 
 	url := fmt.Sprintf("https://zkillboard.com/api/killID/%d/", id)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-
+	body, err := client.MakeGetRequest(url)
 	if err != nil {
-		return errors.Wrap(err, "Failed to buid zkb killmail request")
-	}
-
-	req.Header.Set("User-Agent", client.UserAgent)
-
-	res, err := client.HTTP.Do(req)
-
-	if err != nil {
-		return errors.Wrap(err, "Failed to make zkb killmail request")
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-
-	if err != nil {
-		return errors.Wrap(err, "Failed to read response from zkb killmail request")
-	}
-
-	if res.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Bad code from zkb - %v - %s", res.StatusCode, string(body)))
+		return errors.Wrap(err, fmt.Sprintf("Failed to query zkb for killid: %v", id))
 	}
 
 	km := []store.ZKBResponse{}
