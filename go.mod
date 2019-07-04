@@ -6,7 +6,6 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/websocket v1.4.0
 	github.com/pkg/errors v0.8.0
-	github.com/pkg/profile v1.3.0
 	github.com/spf13/viper v1.4.0
 	github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65 // indirect
 	github.com/urfave/cli v1.20.0

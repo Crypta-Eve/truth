@@ -9,8 +9,8 @@ import (
 	"github.com/Crypta-Eve/truth/dequeue"
 	"github.com/Crypta-Eve/truth/enqueue"
 	"github.com/Crypta-Eve/truth/reports"
+	"github.com/Crypta-Eve/truth/setup"
 	"github.com/Crypta-Eve/truth/testconnect"
-	"github.com/Crypta-Eve/truth/wss"
 
 	// "github.com/pkg/profile"
 	"github.com/spf13/viper"
@@ -118,7 +118,7 @@ func init() {
 				{
 					Name:        "wss",
 					Category:    "Process",
-					Action:      wss.WholeWSS,
+					Action:      enqueue.WholeWSS,
 					Usage:       "Monitor WSS for real time killmails",
 					UsageText:   "zkb",
 					Description: "",
@@ -126,7 +126,7 @@ func init() {
 				{
 					Name:        "hashmaint",
 					Category:    "Process",
-					Action:      dequeue.HashTableMaint,
+					Action:      setup.HashTableMaint,
 					Usage:       "Maintain Hashes",
 					UsageText:   "hashmaint",
 					Description: "",
@@ -186,7 +186,7 @@ func init() {
 			Category:    "Setup",
 			Usage:       "Setup",
 			UsageText:   "Setup the systems",
-			Action:      enqueue.PerformSetup,
+			Action:      setuo.PerformSetup,
 			Description: "This will ensure everything is set up correctly",
 		},
 	}

@@ -1,4 +1,4 @@
-package enqueue
+package setup
 
 import (
 	"github.com/Crypta-Eve/truth/client"

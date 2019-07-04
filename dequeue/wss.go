@@ -1,4 +1,4 @@
-package wss
+package dequeue
 
 import (
 	"strings"
