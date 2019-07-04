@@ -144,7 +144,6 @@ func (db *DB) ListMissingKillmails() (mails []ScrapeQueue, err error) {
 	}
 
 	startA := time.Now()
-	// options.Aggregate().SetBatchSize(500000)
 	c, err := collection.Aggregate(ctx, pipeline, options.Aggregate().SetBypassDocumentValidation(true))
 	if err != nil {
 		return mails, errors.Wrap(err, "error retrieving existing hashes")
@@ -153,10 +152,6 @@ func (db *DB) ListMissingKillmails() (mails []ScrapeQueue, err error) {
 	fmt.Printf("Aggregate took %vs\n", time.Now().Sub(startA).Seconds())
 
 	defer c.Close(ctx)
-
-	// start := time.Now()
-
-	// -----------------------------------------------------------------------
 
 	c2 := db.Database.Database("truth").Collection(rand)
 
@@ -186,59 +181,6 @@ func (db *DB) ListMissingKillmails() (mails []ScrapeQueue, err error) {
 	fmt.Printf("Cursor took %vs\n", time.Now().Sub(start).Seconds())
 	return mails, nil
 
-	//------------------------------------------------------------------------
-
-	// outputChan := make(chan ScrapeQueue, 50)
-	// var waitgroup sync.WaitGroup
-	// hashes := []ScrapeQueue{}
-
-	// for i := 0; i < 1; i++ {
-	// 	//Start up the go routines
-	// 	waitgroup.Add(1)
-	// 	i1 := i
-	// 	go func() {
-	// 		for j := 0; j < 10; j++ {
-	// 			for c.Next(context.Background()) {
-	// 				hsh := ScrapeQueue{}
-	// 				err := c.Decode(&hsh)
-	// 				if err == nil {
-	// 					outputChan <- hsh
-	// 				}
-	// 				fmt.Print(i1)
-	// 				// time.Sleep(500 * time.Nanosecond)
-	// 			}
-	// 			time.Sleep(15 * time.Second)
-	// 		}
-	// 		waitgroup.Done()
-	// 		fmt.Printf("%v done\n", i1)
-	// 	}()
-	// }
-
-	// go func() {
-	// 	for hash := range outputChan {
-	// 		hashes = append(hashes, hash)
-	// 		// fmt.Print(".")
-	// 	}
-	// }()
-
-	// waitgroup.Wait()
-
-	// close(outputChan)
-
-	// // for c.Next(ctx) {
-
-	// // 	var hash = ScrapeQueue{}
-
-	// // 	err := c.Decode(&hash)
-	// // 	if err != nil {
-	// // 		return mails, errors.Wrap(err, "Failed to morp idhash into struct")
-	// // 	}
-
-	// // 	mails = append(mails, hash)
-	// // }
-
-	// fmt.Printf("Cursor took %vs\n", time.Now().Sub(start).Seconds())
-	// return hashes, nil
 }
 
 func (db *DB) GetKillsMissingZKB() (hashes []ScrapeQueue, err error) {
