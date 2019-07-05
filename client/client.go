@@ -19,6 +19,7 @@ type (
 		Log       *log.Logger
 		UserAgent string
 		ESIRateLimit *safeCounter
+		ZKBRateLimit *safeCounter
 	}
 
 	safeCounter struct {
@@ -39,14 +40,19 @@ func New() (*Client, error) {
 		return nil, err
 	}
 
-	rateLim := &make(safeCounter)
+	rateLimESI := &make(safeCounter)
+	rateLimZkill := &make(safeCounter)
 
 	go func() {
 		for {
 			time.Sleep(time.Second)
-			if rateLim.Value() > 0 {
-				rateLim.Dec()
+			if rateLimESI.Value() > 0 {
+				rateLimESI.Dec()
 			}
+			if rateLimZkill.Value() > 0 {
+				rateLimZkill.Dec()
+			}
+
 		}
 	}()
 
@@ -57,7 +63,8 @@ func New() (*Client, error) {
 		Store:        store,
 		Log:          logger,
 		UserAgent:    viper.GetString("user_agent"),
-		ESIRateLimit: rateLim,
+		ESIRateLimit: rateLimESI,
+		ZKBRateLimit: rateLimZkill,
 		RetryLimit:   10,
 	}, nil
 
@@ -103,9 +110,35 @@ func (c *Client) MakeESIGet(url string) ([]byte, error) {
 		if err != nil {
 			continue
 		}
-		if !(status >= 200 && status < 300) {
+		if !(status == 200) {
 			// Increment the counter :(
 			c.ESIRateLimit.Inc()
+			continue
+		}
+
+		return body, err
+	}
+
+	return nil, fmt.Errorf("Max retries exceeded for url: ", url)
+}
+
+func (c *Client) MakeZKBGet(url string) ([]byte, error) {
+
+	retriesRemain := c.RetryLimit
+	for retriesRemain > 1 {
+		retriesRemain--
+
+		for c.ZKBRateLimit.Value() > 10 {
+			time.sleep(500 * time.Millisecond)
+		}
+
+		body, status, err := makeRawHTTPGet(url)
+		if err != nil {
+			continue
+		}
+		if !(status == 200) {
+			// Increment the counter :(
+			c.ZKBRateLimit.Inc()
 			continue
 		}
 
@@ -150,7 +183,9 @@ func (c *safeCounter) Inc() {
 // Dec decrements the counter.
 func (c *safeCounter) Dec() {
 	c.mux.Lock()
-	c.cnt++
+	if c.cnt > 0 {
+		c.cnt--
+	}
 	c.mux.Unlock()
 }
 
