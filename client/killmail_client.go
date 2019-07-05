@@ -3,8 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"github.com/Crypta-Eve/truth/store"
 	"github.com/pkg/errors"
@@ -37,7 +35,7 @@ func (client *Client) FetchAndInsertZKB(id int) error {
 
 	url := fmt.Sprintf("https://zkillboard.com/api/killID/%d/", id)
 
-	body, err := client.MakeGetRequest(url)
+	body, err := client.MakeZKBGet(url)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Failed to query zkb for killid: %v", id))
 	}

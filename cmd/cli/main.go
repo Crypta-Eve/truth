@@ -118,7 +118,7 @@ func init() {
 				{
 					Name:        "wss",
 					Category:    "Process",
-					Action:      enqueue.WholeWSS,
+					Action:      dequeue.WholeWSS,
 					Usage:       "Monitor WSS for real time killmails",
 					UsageText:   "zkb",
 					Description: "",
@@ -186,7 +186,7 @@ func init() {
 			Category:    "Setup",
 			Usage:       "Setup",
 			UsageText:   "Setup the systems",
-			Action:      setuo.PerformSetup,
+			Action:      setup.PerformSetup,
 			Description: "This will ensure everything is set up correctly",
 		},
 	}

@@ -1,25 +1,28 @@
 package client
 
 import (
+	"fmt"
+	"io/ioutil"
 	"log"
-	"time"
-
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/Crypta-Eve/truth/store"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
 type (
 	Client struct {
-		HTTP      *http.Client
-		Store     store.Store
-		Log       *log.Logger
-		UserAgent string
+		HTTP         *http.Client
+		Store        store.Store
+		Log          *log.Logger
+		UserAgent    string
 		ESIRateLimit *safeCounter
 		ZKBRateLimit *safeCounter
+		RetryLimit   int
 	}
 
 	safeCounter struct {
@@ -40,8 +43,8 @@ func New() (*Client, error) {
 		return nil, err
 	}
 
-	rateLimESI := &make(safeCounter)
-	rateLimZkill := &make(safeCounter)
+	rateLimESI := &safeCounter{}
+	rateLimZkill := &safeCounter{}
 
 	go func() {
 		for {
@@ -75,22 +78,22 @@ func (c *Client) makeRawHTTPGet(url string) ([]byte, int, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to buid http request")
+		return nil, 0, errors.Wrap(err, "Failed to buid http request")
 	}
 
-	req.Header.Set("User-Agent", client.UserAgent)
+	req.Header.Set("User-Agent", c.UserAgent)
 
-	res, err := client.HTTP.Do(req)
+	res, err := c.HTTP.Do(req)
 
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to make request")
+		return nil, 0, errors.Wrap(err, "Failed to make request")
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Failed to read response from request")
+		return nil, 0, errors.Wrap(err, "Failed to read response from request")
 	}
 
 	return body, res.StatusCode, nil
@@ -103,10 +106,10 @@ func (c *Client) MakeESIGet(url string) ([]byte, error) {
 		retriesRemain--
 
 		for c.ESIRateLimit.Value() > 10 {
-			time.sleep(500 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 		}
 
-		body, status, err := makeRawHTTPGet(url)
+		body, status, err := c.makeRawHTTPGet(url)
 		if err != nil {
 			continue
 		}
@@ -129,10 +132,10 @@ func (c *Client) MakeZKBGet(url string) ([]byte, error) {
 		retriesRemain--
 
 		for c.ZKBRateLimit.Value() > 10 {
-			time.sleep(500 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 		}
 
-		body, status, err := makeRawHTTPGet(url)
+		body, status, err := c.makeRawHTTPGet(url)
 		if err != nil {
 			continue
 		}
@@ -154,10 +157,10 @@ func (c *Client) MakeGetRequest(url string) ([]byte, error) {
 		retriesRemain--
 
 		for c.ESIRateLimit.Value() > 10 {
-			time.sleep(500 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 		}
 
-		body, status, err := makeRawHTTPGet(url)
+		body, status, err := c.makeRawHTTPGet(url)
 		if err != nil {
 			continue
 		}
