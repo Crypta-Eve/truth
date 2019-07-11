@@ -1,11 +1,14 @@
 package client
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	// "net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -59,16 +62,27 @@ func New() (*Client, error) {
 		}
 	}()
 
+	// proxyURL, err := url.Parse("http://localhost:3128")
+	// if err != nil {
+	// 	fmt.Println("Unable to use proxy")
+	// }
+
 	return &Client{
 		HTTP: &http.Client{
 			Timeout: time.Second * 40,
+			Transport: &http.Transport{
+				// Proxy: http.ProxyURL(proxyURL),
+				MaxConnsPerHost:     10,
+				MaxIdleConnsPerHost: 2,
+				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+			},
 		},
 		Store:        store,
 		Log:          logger,
 		UserAgent:    viper.GetString("user_agent"),
 		ESIRateLimit: rateLimESI,
 		ZKBRateLimit: rateLimZkill,
-		RetryLimit:   10,
+		RetryLimit:   25,
 	}, nil
 
 }
@@ -88,9 +102,9 @@ func (c *Client) makeRawHTTPGet(url string) ([]byte, int, error) {
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "Failed to make request")
 	}
+	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
 
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "Failed to read response from request")
@@ -99,7 +113,7 @@ func (c *Client) makeRawHTTPGet(url string) ([]byte, int, error) {
 	return body, res.StatusCode, nil
 }
 
-func (c *Client) MakeESIGet(url string) ([]byte, error) {
+func (c *Client) MakeESIGet(url string) (out []byte, err error) {
 
 	retriesRemain := c.RetryLimit
 	for retriesRemain > 1 {
@@ -111,18 +125,26 @@ func (c *Client) MakeESIGet(url string) ([]byte, error) {
 
 		body, status, err := c.makeRawHTTPGet(url)
 		if err != nil {
+			if strings.Contains(err.Error(), "too many open files") {
+				// This is not going to hurt to keep retrying
+				retriesRemain++
+			} else {
+				// fmt.Printf("ESI GET ERROR - %v\n", err)
+			}
 			continue
 		}
 		if !(status == 200) {
 			// Increment the counter :(
 			c.ESIRateLimit.Inc()
+			// fmt.Printf("ESI GET RESPONSE ERROR - %v - %v - %v\n", status, url, string(body))
+			time.Sleep(250 * time.Millisecond)
 			continue
 		}
 
 		return body, err
 	}
 
-	return nil, fmt.Errorf("Max retries exceeded for url: ", url)
+	return nil, fmt.Errorf("Max retries exceeded for url: ; err: %v", url, err)
 }
 
 func (c *Client) MakeZKBGet(url string) ([]byte, error) {
@@ -142,6 +164,7 @@ func (c *Client) MakeZKBGet(url string) ([]byte, error) {
 		if !(status == 200) {
 			// Increment the counter :(
 			c.ZKBRateLimit.Inc()
+			time.Sleep(250 * time.Millisecond)
 			continue
 		}
 
@@ -165,8 +188,7 @@ func (c *Client) MakeGetRequest(url string) ([]byte, error) {
 			continue
 		}
 		if !(status >= 200 && status < 300) {
-			// Increment the counter :(
-			c.ESIRateLimit.Inc()
+			time.Sleep(250 * time.Millisecond)
 			continue
 		}
 

@@ -12,17 +12,17 @@ import (
 	"github.com/Crypta-Eve/truth/setup"
 	"github.com/Crypta-Eve/truth/testconnect"
 
-	// "github.com/pkg/profile"
+	"github.com/pkg/profile"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
 
 var app *cli.App
 
-var defSleep = cli.IntFlag{
-	Name:  "sleep",
-	Usage: "Custom Sleep Duration",
-}
+// var defSleep = cli.IntFlag{
+// 	Name:  "sleep",
+// 	Usage: "Custom Sleep Duration",
+// }
 
 func init() {
 	app = cli.NewApp()
@@ -186,8 +186,21 @@ func init() {
 			Category:    "Setup",
 			Usage:       "Setup",
 			UsageText:   "Setup the systems",
-			Action:      setup.PerformSetup,
 			Description: "This will ensure everything is set up correctly",
+			Subcommands: []cli.Command{
+				{
+					Name:     "database",
+					Category: "Setup",
+					Usage:    "database",
+					Action:   setup.PerformSetup,
+				},
+				{
+					Name:     "static",
+					Category: "Setup",
+					Usage:    "static",
+					Action:   setup.PopulateStaticData,
+				},
+			},
 		},
 	}
 
@@ -202,7 +215,7 @@ func init() {
 
 func main() {
 
-	// defer profile.Start().Stop()
+	defer profile.Start().Stop()
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)

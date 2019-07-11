@@ -208,7 +208,7 @@ func ProcessMissingZKB(c *cli.Context) error {
 
 		// Lets batch these out, for the case where we have bulk missing zkbs....... Sorry Squizz for hammer.....
 
-		numThreads := 50
+		const numThreads = 50
 
 		if numMissing < numThreads {
 
