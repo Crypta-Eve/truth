@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	// "net/url"
 	"os"
 	"strings"
 	"sync"
@@ -62,16 +61,10 @@ func New() (*Client, error) {
 		}
 	}()
 
-	// proxyURL, err := url.Parse("http://localhost:3128")
-	// if err != nil {
-	// 	fmt.Println("Unable to use proxy")
-	// }
-
 	return &Client{
 		HTTP: &http.Client{
 			Timeout: time.Second * 40,
 			Transport: &http.Transport{
-				// Proxy: http.ProxyURL(proxyURL),
 				MaxConnsPerHost:     10,
 				MaxIdleConnsPerHost: 2,
 				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},

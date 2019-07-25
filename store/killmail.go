@@ -36,7 +36,22 @@ func (db *DB) InsertKillmail(kill KillmailData) error {
 	return nil
 }
 
-//
+func (db *DB) GetKillmail(id int) (mail KillmailData, err error) {
+	collection := db.Database.Database("truth").Collection("killmails")
+
+	filter := bson.M{
+		"_id": id,
+	}
+
+	ctx := context.TODO()
+
+	c := collection.FindOne(ctx, filter)
+
+	err = c.Decode(&mail)
+
+	return mail, err
+}
+
 func (db *DB) ListAllExistingIDs() (ids []int, err error) {
 
 	collection := db.Database.Database("truth").Collection("killmails")
@@ -217,6 +232,44 @@ func (db *DB) GetKillsMissingZKB() (hashes []ScrapeQueue, err error) {
 	}
 
 	return hashes, nil
+}
+
+func (db *DB) GetKillsMissingAxiom() (mails []KillmailData, err error) {
+	collection := db.Database.Database("truth").Collection("killmails")
+
+	filter := bson.M{
+		"$or": []bson.M{
+			{
+				"axiom": bson.M{
+					"$exists": false,
+				},
+			},
+			{
+				"axiom.hp": bson.M{
+					"$exists": false,
+				},
+			},
+		},
+	}
+
+	c, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return mails, errors.Wrap(err, "error retrieving killmails missing zkb element")
+	}
+
+	defer c.Close(context.TODO())
+
+	for c.Next(context.TODO()) {
+		var hsh KillmailData
+		err = c.Decode(&hsh)
+		if err != nil {
+			return mails, err
+		}
+
+		mails = append(mails, hsh)
+	}
+
+	return mails, nil
 }
 
 func (db *DB) UpdateKillmail(filter interface{}, update interface{}) error {

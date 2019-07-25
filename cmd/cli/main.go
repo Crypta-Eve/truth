@@ -131,6 +131,14 @@ func init() {
 					UsageText:   "hashmaint",
 					Description: "",
 				},
+				{
+					Name:        "axiom",
+					Category:    "Process",
+					Action:      dequeue.ProcessMissingAttributes,
+					Usage:       "Make sure all killmails have axiom attributes",
+					UsageText:   "axiom",
+					Description: "",
+				},
 			},
 		},
 		{

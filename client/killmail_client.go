@@ -1,8 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/Crypta-Eve/truth/store"
 	"github.com/pkg/errors"
@@ -61,4 +64,52 @@ func (client *Client) FetchAndInsertZKB(id int) error {
 	err = client.Store.UpdateKillmail(filter, update)
 
 	return err
+}
+
+func (client *Client) FetchAndInsertAxiom(mail store.KillmailData) error {
+
+	data, err := json.Marshal(mail.KillData)
+	if err != nil {
+		client.Log.Printf("Error processing mail:\n %#v\nerr:%s\n", mail, err)
+		return errors.Wrap(err, "Failed to marshal killmail...")
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:3005/killmail", bytes.NewBuffer(data))
+	if err != nil {
+		return errors.Wrap(err, "Failed to build axiom request")
+	}
+
+	res, err := client.HTTP.Do(req)
+	if err != nil {
+		return errors.Wrap(err, "Failed to contact axiom")
+	}
+
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return errors.Wrap(err, "Error reading axiom body")
+	}
+
+	attr := store.FittingAttributes{}
+	err = json.Unmarshal(body, &attr)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode axiom data")
+	}
+
+	filter := bson.M{
+		"_id": mail.KillID,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"axiom": attr,
+		},
+	}
+
+	err = client.Store.UpdateKillmail(filter, update)
+	if err != nil {
+		return errors.Wrap(err, "Failed to insert axiom data into mongo")
+	}
+	return nil
 }

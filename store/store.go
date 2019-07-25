@@ -10,6 +10,9 @@ type (
 		InsertKillmail(kill KillmailData) error
 		InsertKillIDHash(idhash ScrapeQueue) error
 
+		// Get specific data
+		GetKillmail(id int) (mail KillmailData, err error)
+
 		//Update data
 		UpdateKillmail(filter interface{}, update interface{}) error
 
@@ -27,6 +30,7 @@ type (
 		ListAllExistingKillmails() (mails []KillmailData, err error)
 		ListMissingKillmails() (mails []ScrapeQueue, err error)
 		GetKillsMissingZKB() (hashes []ScrapeQueue, err error)
+		GetKillsMissingAxiom() (mails []KillmailData, err error)
 		UpdateManyHashes(hashes []ScrapeQueue) error
 
 		// SetupTasks
@@ -68,9 +72,10 @@ type (
 	}
 
 	KillmailData struct {
-		KillID   int         `json:"_id" bson:"_id"`
-		KillData ESIKillmail `json:"killmail" bson:"killmail"`
-		ZKBData  ZKBData     `json:"zkb,omitempty" bson:"zkb,omitempty"`
+		KillID         int               `json:"_id" bson:"_id"`
+		KillData       ESIKillmail       `json:"killmail" bson:"killmail"`
+		ZKBData        ZKBData           `json:"zkb,omitempty" bson:"zkb,omitempty"`
+		AxiomAttribute FittingAttributes `json:"axiom" bson:"axiom"`
 	}
 
 	ESIKillmail struct {
@@ -279,6 +284,11 @@ type (
 		Groups     []int32 `json:"groups" bson:"groups"`
 		Name       string  `json:"name" bson:"name"`
 		Published  bool    `json:"published" bson:"published"`
+	}
+
+	FittingAttributes struct {
+		Ship   map[string]float64   `json:"ship,omitempty" bson:"ship,omitempty"`
+		Drones []map[string]float64 `json:"drones,omitempty" bson:"drones,omitempty"`
 	}
 )
 

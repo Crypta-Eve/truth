@@ -163,7 +163,10 @@ func ProcessMissingKillmails(c *cli.Context) error {
 							continue
 						}
 						client.Log.Printf("err: %v", err)
+						continue
 					}
+
+					client.Store.
 				}
 
 				waitgroup.Done()
