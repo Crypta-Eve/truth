@@ -167,3 +167,5 @@ main
 #ignore the env file
 cmd/cli/env.json
 env.json
+
+Docker/mongo-volume/

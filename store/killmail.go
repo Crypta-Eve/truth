@@ -3,20 +3,25 @@ package store
 import (
 	"context"
 	"fmt"
-	"math/rand"
+
+	// "math/rand"
 	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+
+	// "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (db *DB) InsertKillIDHash(idhash ScrapeQueue) error {
 
-	collection := db.Database.Database("truth").Collection("hashes")
+	collection := db.Database.Database("truth").Collection("killmails")
 
-	_, err := collection.InsertOne(context.TODO(), idhash)
+	filter := bson.M{"_id": idhash.ID}
+	update := bson.M{"$set": bson.M{"hash": idhash.Hash}}
+
+	_, err := collection.UpdateOne(context.TODO(), filter, update, options.Update().SetUpsert(true))
 	if err != nil {
 		return errors.Wrap(err, "failed to insert kill id hash")
 	}
@@ -27,8 +32,10 @@ func (db *DB) InsertKillIDHash(idhash ScrapeQueue) error {
 func (db *DB) InsertKillmail(kill KillmailData) error {
 
 	collection := db.Database.Database("truth").Collection("killmails")
+	filter := bson.M{"_id": kill.KillID}
+	update := bson.M{"$set": bson.M{"killmail": kill.KillData}}
 
-	_, err := collection.InsertOne(context.TODO(), kill)
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return errors.Wrap(err, "Failed to insert killmail to db")
 	}
@@ -121,71 +128,23 @@ func (db *DB) ListAllExistingKillmails() (mails []KillmailData, err error) {
 
 func (db *DB) ListMissingKillmails() (mails []ScrapeQueue, err error) {
 
-	collection := db.Database.Database("truth").Collection("hashes")
+	collection := db.Database.Database("truth").Collection("killmails")
 
 	ctx := context.Background()
-
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-	b := make([]byte, 16)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-
-	rand := fmt.Sprintf("temp_%s", string(b))
-
-	pipeline := mongo.Pipeline{
-		bson.D{
-			{"$lookup", bson.D{
-				{"from", "killmails"},
-				{"localField", "_id"},
-				{"foreignField", "_id"},
-				{"as", "mail"},
-			}}},
-		bson.D{
-			{"$unwind", bson.D{
-				{"path", "$mail"},
-				{"preserveNullAndEmptyArrays", true},
-			}}},
-		bson.D{
-			{"$match", bson.D{
-				{"mail", bson.D{
-					{"$exists", false},
-				}},
-			}}},
-		bson.D{
-			{"$out", rand},
-		},
-	}
-
-	startA := time.Now()
-	c, err := collection.Aggregate(ctx, pipeline, options.Aggregate().SetBypassDocumentValidation(true))
+	c, err := collection.Find(ctx, bson.M{"killmail.killmail_id": bson.M{"$exists": false}})
 	if err != nil {
-		return mails, errors.Wrap(err, "error retrieving existing hashes")
-	}
-
-	fmt.Printf("Aggregate took %vs\n", time.Now().Sub(startA).Seconds())
-
-	defer c.Close(ctx)
-
-	c2 := db.Database.Database("truth").Collection(rand)
-
-	ctx2 := context.Background()
-
-	c3, err := c2.Find(ctx2, bson.M{})
-	if err != nil {
-		return mails, errors.Wrap(err, "error retrieving existing hashes")
+		return mails, errors.Wrap(err, "error retrieving missing killmails")
 	}
 
 	defer c.Close(ctx)
 
 	start := time.Now()
 
-	for c3.Next(ctx) {
+	for c.Next(ctx) {
 
 		var mail = ScrapeQueue{}
 
-		err := c3.Decode(&mail)
+		err := c.Decode(&mail)
 		if err != nil {
 			return mails, errors.Wrap(err, "Failed to morp killmail into struct")
 		}
@@ -204,7 +163,7 @@ func (db *DB) GetKillsMissingZKB() (hashes []ScrapeQueue, err error) {
 	filter := bson.M{
 		"$or": []bson.M{
 			{
-				"zkb": bson.M{
+				"zkb.hash": bson.M{
 					"$exists": false,
 				},
 			},

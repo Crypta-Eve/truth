@@ -3,6 +3,7 @@ package analytics
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Crypta-Eve/truth/client"
 	"github.com/pkg/errors"
@@ -67,7 +68,8 @@ func AggregateLosses(c *cli.Context) error {
 		client.Log.Fatal("invalid number of arguments")
 	}
 
-	output, err := AggregateLossCountAnalysis(aggregateType, entityType, allID, client)
+	var t1 time.Time
+	output, err := AggregateLossCountAnalysis(aggregateType, entityType, allID, client, t1, t1)
 	if err != nil {
 		return cli.NewExitError(errors.Wrap(err, "Failed to perform ship loss analysis"), 1)
 	}
@@ -138,7 +140,8 @@ func AggregateKilled(c *cli.Context) error {
 		client.Log.Fatal("invalid number of arguments")
 	}
 
-	output, err := AggregateKilledCountAnalysis(aggregateType, entityType, allID, client)
+	var t1 time.Time
+	output, err := AggregateKilledCountAnalysis(aggregateType, entityType, allID, client ,t1, t1)
 	if err != nil {
 		return cli.NewExitError(errors.Wrap(err, "Failed to perform ship loss analysis"), 1)
 	}
@@ -209,7 +212,9 @@ func AggregateKills(c *cli.Context) error {
 		client.Log.Fatal("invalid number of arguments")
 	}
 
-	output, err := AggregateKillsCountAnalysis(aggregateType, entityType, allID, client)
+	var t1 time.Time
+
+	output, err := AggregateKillsCountAnalysis(aggregateType, entityType, allID, client, t1, t1)
 	if err != nil {
 		return cli.NewExitError(errors.Wrap(err, "Failed to perform ship loss analysis"), 1)
 	}

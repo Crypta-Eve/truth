@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -10,6 +11,8 @@ func (db *DB) GetData(filter interface{}) (results []KillmailData, err error) {
 	collection := db.Database.Database("truth").Collection("killmails")
 
 	ctx := context.TODO()
+
+	fmt.Println(filter)
 
 	c, err := collection.Find(ctx, filter)
 	defer c.Close(ctx)

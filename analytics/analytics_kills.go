@@ -3,6 +3,7 @@ package analytics
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Crypta-Eve/truth/client"
 	"github.com/pkg/errors"
@@ -11,7 +12,7 @@ import (
 )
 
 //AggregateLossCountAnalysis returns a sorted slice of Pair items where the Key is a Entity name and the key is the number killed for the entity type
-func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
+func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client, startDate time.Time, endDate time.Time) (counts PairList, err error) {
 
 	filterField := ""
 
@@ -26,8 +27,18 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 		return counts, errors.New("Invalid entityType got through.... This shouldnt happen")
 	}
 
-	filter := bson.M{
-		filterField: entityID,
+	filter := bson.M{}
+
+	filter[filterField] = entityID
+
+
+
+	if !(startDate.IsZero() && endDate.IsZero()){
+
+		filter["$and"] = []interface{}{
+			bson.M{"killmail.killmail_time": bson.M{"$gte": startDate}},
+			bson.M{"killmail.killmail_time": bson.M{"$lte": endDate}},
+		}
 	}
 
 	mails, err := c.Store.GetData(filter)
@@ -47,6 +58,12 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 		}
 	}
 
+	if aggregate == "day" {
+		for i := 0; i < 7; i++ {
+			idCount[i] = 0
+		}
+	}
+
 	for _, mail := range mails {
 		switch aggregate {
 		case "corporation":
@@ -59,8 +76,10 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 			idCount[mail.KillData.SolarSystemID]++
 		case "hour":
 			idCount[mail.KillData.KillmailTime.Hour()]++
+		case "day":
+			idCount[int(mail.KillData.KillmailTime.Weekday())]++
 		default:
-			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system")
+			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system, hour, day")
 		}
 
 	}
@@ -70,6 +89,16 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 
 		for k, v := range idCount {
 			counts[k] = Pair{Key: strconv.Itoa(k), Value: v}
+		}
+
+		return counts, nil
+	}
+
+	if aggregate == "day" {
+		counts = make(PairList, len(idCount))
+
+		for k, v := range idCount {
+			counts[k] = Pair{Key: time.Weekday(k).String(), Value: v}
 		}
 
 		return counts, nil
@@ -97,7 +126,7 @@ func AggregateKilledCountAnalysis(aggregate string, entityType string, entityID 
 	return counts, nil
 }
 
-func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
+func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client, startDate time.Time, endDate time.Time) (counts PairList, err error) {
 
 	filterField := ""
 
@@ -112,8 +141,18 @@ func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID i
 		return counts, errors.New("Invalid entityType got through.... This shouldnt happen")
 	}
 
-	filter := bson.M{
-		filterField: entityID,
+	filter := bson.M{}
+
+	filter[filterField] = entityID
+
+
+
+	if !(startDate.IsZero() && endDate.IsZero()){
+
+		filter["$and"] = []interface{}{
+			bson.M{"killmail.killmail_time": bson.M{"$gte": startDate}},
+			bson.M{"killmail.killmail_time": bson.M{"$lte": endDate}},
+		}
 	}
 
 	mails, err := c.Store.GetData(filter)
@@ -134,6 +173,12 @@ func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID i
 
 	if aggregate == "hour" {
 		for i := 0; i < 24; i++ {
+			idCount[i] = 0
+		}
+	}
+
+	if aggregate == "day" {
+		for i := 0; i < 7; i++ {
 			idCount[i] = 0
 		}
 	}
@@ -188,28 +233,35 @@ func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID i
 				idCount[id]++
 			}
 		case "ship":
+			temp := make(map[int]void)
 			for _, attacker := range mail.KillData.Attackers {
 				switch entityType {
 				case "alliance":
 					if attacker.AllianceID == entityID {
-						idCount[attacker.ShipTypeID]++
+						temp[attacker.ShipTypeID] = setter
 					}
 				case "corporation":
 					if attacker.CorporationID == entityID {
-						idCount[attacker.ShipTypeID]++
+						temp[attacker.ShipTypeID] = setter
 					}
 				case "character":
 					if attacker.CharacterID == entityID {
-						idCount[attacker.ShipTypeID]++
+						temp[attacker.ShipTypeID] = setter
 					}
 				}
+			}
+
+			for id := range temp {
+				idCount[id]++
 			}
 		case "system":
 			idCount[mail.KillData.SolarSystemID]++
 		case "hour":
 			idCount[mail.KillData.KillmailTime.Hour()]++
+		case "day":
+			idCount[int(mail.KillData.KillmailTime.Weekday())]++
 		default:
-			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system")
+			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system, hour, day")
 		}
 
 	}
@@ -219,6 +271,16 @@ func AggregateKillsCountAnalysis(aggregate string, entityType string, entityID i
 
 		for k, v := range idCount {
 			counts[k] = Pair{Key: strconv.Itoa(k), Value: v}
+		}
+
+		return counts, nil
+	}
+
+	if aggregate == "day" {
+		counts = make(PairList, len(idCount))
+
+		for k, v := range idCount {
+			counts[k] = Pair{Key: time.Weekday(k).String(), Value: v}
 		}
 
 		return counts, nil

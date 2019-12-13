@@ -2,7 +2,7 @@ package analytics
 
 import (
 	"fmt"
-	"strconv"
+	"time"
 
 	"github.com/Crypta-Eve/truth/client"
 	"github.com/pkg/errors"
@@ -11,7 +11,7 @@ import (
 )
 
 //AggregateLossCountAnalysis returns a sorted slice of Pair items where the Key is a Entity name and the key is the number lost for the entity type
-func AggregateLossCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client) (counts PairList, err error) {
+func AggregateLossCountAnalysis(aggregate string, entityType string, entityID int, c *client.Client, startDate time.Time, endDate time.Time) (counts PairList, err error) {
 
 	filterField := ""
 
@@ -26,8 +26,18 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 		return counts, errors.New("Invalid entityType got through.... This shouldnt happen")
 	}
 
-	filter := bson.M{
-		filterField: entityID,
+	filter := bson.M{}
+
+	filter[filterField] = entityID
+
+
+
+	if !(startDate.IsZero() && endDate.IsZero()){
+
+		filter["$and"] = []interface{}{
+			bson.M{"killmail.killmail_time": bson.M{"$gte": startDate}},
+			bson.M{"killmail.killmail_time": bson.M{"$lte": endDate}},
+		}
 	}
 
 	mails, err := c.Store.GetData(filter)
@@ -47,6 +57,12 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 		}
 	}
 
+	if aggregate == "day" {
+		for i := 0; i < 7; i++ {
+			idCount[i] = 0
+		}
+	}
+
 	for _, mail := range mails {
 		switch aggregate {
 		case "corporation":
@@ -59,17 +75,19 @@ func AggregateLossCountAnalysis(aggregate string, entityType string, entityID in
 			idCount[mail.KillData.SolarSystemID]++
 		case "hour":
 			idCount[mail.KillData.KillmailTime.Hour()]++
+		case "day":
+			idCount[int(mail.KillData.KillmailTime.Weekday())]++
 		default:
-			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system")
+			return counts, errors.New("Invalid aggregate (shouldnt have got here), options are - corporation, character, ship, system, hour, day")
 		}
 
 	}
 
-	if aggregate == "hour" {
+	if aggregate == "hour" || aggregate == "day" {
 		counts = make(PairList, len(idCount))
 
 		for k, v := range idCount {
-			counts[k] = Pair{Key: strconv.Itoa(k), Value: v}
+			counts[k] = Pair{Key: time.Weekday(k).String(), Value: v}
 		}
 
 		return counts, nil

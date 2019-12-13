@@ -75,7 +75,7 @@ type (
 		KillID         int               `json:"_id" bson:"_id"`
 		KillData       ESIKillmail       `json:"killmail" bson:"killmail"`
 		ZKBData        ZKBData           `json:"zkb,omitempty" bson:"zkb,omitempty"`
-		AxiomAttribute FittingAttributes `json:"axiom" bson:"axiom"`
+		AxiomAttribute FittingAttributes `json:"axiom,omitempty" bson:"axiom,omitempty"`
 	}
 
 	ESIKillmail struct {

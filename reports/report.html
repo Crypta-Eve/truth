@@ -1,36 +1,41 @@
 {{ define "report" }}
 
-{{ template "header"}}
+    {{ template "header"}}
 
-<body>
+    <body>
 
     <nav class="navbar navbar-expand-sm bg-dark navbar-dark justify-content-center">
-        <a class="navbar-brand" href="#">Eve Truth Alliance Report</a>
+        <a class="navbar-brand" href="#">Eve Truth Alliance Report - {{ .AllianceName }}</a>
     </nav>
     <ul class="nav nav-tabs" id="headertabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" href="#corp" id="corp_tab" data-toggle="tab" role="tab" aria-controls="corp"
-                aria-selected="true">Corporations</a>
+               aria-selected="true">Corporations</a>
         </li>
 
         <li class="nav-item">
             <a class="nav-link" href="#pilot" id="pilot_tab" data-toggle="tab" role="tab" aria-controls="pilot"
-                aria-selected="false">Characters</a>
+               aria-selected="false">Characters</a>
         </li>
 
         <li class="nav-item">
             <a class="nav-link" href="#ship" id="ship_tab" data-toggle="tab" role="tab" aria-controls="ship"
-                aria-selected="false">Ship</a>
+               aria-selected="false">Ship</a>
         </li>
 
         <li class="nav-item">
             <a class="nav-link" href="#location" id="location_tab" data-toggle="tab" role="tab" aria-controls="location"
-                aria-selected="false">Location</a>
+               aria-selected="false">Location</a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#tz" id="tz_tab" data-toggle="tab" role="tab" aria-controls="character"
-                aria-selected="false">TZ</a>
+            <a class="nav-link" href="#tz" id="tz_tab" data-toggle="tab" role="tab" aria-controls="tz"
+               aria-selected="false">TZ</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#info" id="info_tab" data-toggle="tab" role="tab" aria-controls="info"
+               aria-selected="false">Info</a>
         </li>
     </ul>
 
@@ -43,6 +48,14 @@
             <!-- Corp Kills Graph -->
             <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
                 <canvas id="corp_kills_chart" width="40" height="40" class="container"></canvas>
+
+                <div class="container">
+                    <h4>Corporation Kills and Losses</h4>
+                    <p>
+                        The corporation kills and losses are calculated once per kill, for each corporation in the alliance.
+                        This means that if Corp A has 2 pilots on a kill, and Corp B has 55 pilots on the kill, both corps will receive 1 kill associated to them.
+                    </p>
+                </div>
             </div>
             <script>
                 var ctx = document.getElementById('corp_kills_chart');
@@ -50,83 +63,41 @@
                     type: 'bar',
                     data: {
                         labels: {{ .CorpKills.Labels }},
-                datasets: [
-                    {
-                        label: "Kills",
-                        backgroundColor: "#33dd33",
-                        data: {{ .CorpKills.Values }}
+                        datasets: [
+                            {
+                                label: "Kills",
+                                backgroundColor: "#33dd33",
+                                data: {{ .CorpKills.Values }}
                             },
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .CorpLosses.Values }}
-                        },
-                ]
+                            {
+                                label: "Losses",
+                                backgroundColor: "#ff3333",
+                                data: {{ .CorpLosses.Values }}
+                            },
+                        ]
                     },
-                options: {
-                    title: {
-                        display: true,
+                    options: {
+                        title: {
+                            display: true,
                             text: 'Kills/Losses By Corporation'
-                    },
-                    maintainAspectRatio: false,
-                        scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
-                            xAxes: [{
-                                gridLines: {
-                                    display: false
-                                }
-                            }]
-                    }
-                }
-                });
-            </script>
-
-            <!-- Corp Losses Graph -->
-            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
-                <canvas id="corp_losses_chart" width="40" height="40" class="container"></canvas>
-            </div>
-            <script>
-                var ctx = document.getElementById('corp_losses_chart');
-                var myChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: {{ .CorpLosses.Labels }},
-                datasets: [
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .CorpLosses.Values }}
                         },
-                ]
-                },
-                options: {
-                    title: {
-                        display: true,
-                            text: 'Losses By Corporation'
-                    },
-                    maintainAspectRatio: false,
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        },
                     }
-                }
-            });
+                });
             </script>
 
         </div>
@@ -144,36 +115,36 @@
                     type: 'bar',
                     data: {
                         labels: {{ .PilotKills.Labels }},
-                datasets: [
-                    {
-                        label: "Kills",
-                        backgroundColor: "#33dd33",
-                        data: {{ .PilotKills.Values }}
+                        datasets: [
+                            {
+                                label: "Kills",
+                                backgroundColor: "#33dd33",
+                                data: {{ .PilotKills.Values }}
+                            },
+                        ]
                     },
-                ]
-            },
-                options: {
-                    title: {
-                        display: true,
+                    options: {
+                        title: {
+                            display: true,
                             text: 'Kills By Character'
-                    },
-                    maintainAspectRatio: false,
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        }
                     }
-                }
-        });
+                });
             </script>
 
             <!-- Pilot Losses Graph -->
@@ -186,36 +157,36 @@
                     type: 'bar',
                     data: {
                         labels: {{ .PilotLosses.Labels }},
-                datasets: [
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .PilotLosses.Values }}
-                },
-                ]
-        },
-                options: {
-                    title: {
-                        display: true,
-                            text: 'Losses By Character'
+                        datasets: [
+                            {
+                                label: "Losses",
+                                backgroundColor: "#ff3333",
+                                data: {{ .PilotLosses.Values }}
+                            },
+                        ]
                     },
-                    maintainAspectRatio: false,
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Losses By Character'
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        }
                     }
-                }
-    });
+                });
             </script>
         </div>
 
@@ -232,36 +203,36 @@
                     type: 'bar',
                     data: {
                         labels: {{ .ShipKillsWith.Labels }},
-                datasets: [
-                    {
-                        label: "Kills",
-                        backgroundColor: "#33dd33",
-                        data: {{ .ShipKillsWith.Values }}
-                        },
-                ]
-                },
-                options: {
-                    title: {
-                        display: true,
-                            text: 'Kills By Ship'
+                        datasets: [
+                            {
+                                label: "Kills",
+                                backgroundColor: "#33dd33",
+                                data: {{ .ShipKillsWith.Values }}
+                            },
+                        ]
                     },
-                    maintainAspectRatio: false,
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Kills By Ship'
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        }
                     }
-                }
-            });
+                });
             </script>
 
             <!-- Ship Losses Graph -->
@@ -274,36 +245,36 @@
                     type: 'bar',
                     data: {
                         labels: {{ .ShipLosses.Labels }},
-                datasets: [
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .ShipLosses.Values }}
+                        datasets: [
+                            {
+                                label: "Losses",
+                                backgroundColor: "#ff3333",
+                                data: {{ .ShipLosses.Values }}
+                            },
+                        ]
                     },
-                ]
-            },
-                options: {
-                    title: {
-                        display: true,
+                    options: {
+                        title: {
+                            display: true,
                             text: 'Losses By Ship'
-                    },
-                    maintainAspectRatio: false,
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        }
                     }
-                }
-        });
+                });
             </script>
         </div>
 
@@ -320,35 +291,35 @@
                     type: 'bar',
                     data: {
                         labels: {{ .LocationKills.Labels }},
-                datasets: [
-                    {
-                        label: "Kills",
-                        backgroundColor: "#33dd33",
-                        data: {{ .LocationKills.Values }}
+                        datasets: [
+                            {
+                                label: "Kills",
+                                backgroundColor: "#33dd33",
+                                data: {{ .LocationKills.Values }}
                             },
-                ]
+                        ]
                     },
-                options: {
-                    title: {
-                        display: true,
+                    options: {
+                        title: {
+                            display: true,
                             text: 'Kills By Location'
-                    },
-                    maintainAspectRatio: false,
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        }
                     }
-                }
                 });
             </script>
 
@@ -362,36 +333,36 @@
                     type: 'bar',
                     data: {
                         labels: {{ .LocationLosses.Labels }},
-                datasets: [
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .LocationLosses.Values }}
-                        },
-                ]
-                },
-                options: {
-                    title: {
-                        display: true,
-                            text: 'Losses By Location'
+                        datasets: [
+                            {
+                                label: "Losses",
+                                backgroundColor: "#ff3333",
+                                data: {{ .LocationLosses.Values }}
+                            },
+                        ]
                     },
-                    maintainAspectRatio: false,
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Losses By Location'
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        }
                     }
-                }
-            });
+                });
             </script>
         </div>
 
@@ -408,51 +379,162 @@
                     type: 'line',
                     data: {
                         labels: {{ .TZKills.Labels }},
-                datasets: [
-                    {
-                        label: "Kills",
-                        backgroundColor: "#33dd33",
-                        data: {{ .TZKills.Values }},
-                    fill: false
-                                },
-                    {
-                        label: "Losses",
-                        backgroundColor: "#ff3333",
-                        data: {{ .TZLosses.Values }},
-                    fill: false
+                        datasets: [
+                            {
+                                label: "Kills",
+                                backgroundColor: "#33dd33",
+                                data: {{ .TZKills.Values }},
+                                fill: false
                             },
-                ]
-                        },
-                options: {
-                    title: {
-                        display: true,
-                            text: 'Kills/Losses By UTC Hour'
+                            {
+                                label: "Losses",
+                                backgroundColor: "#ff3333",
+                                data: {{ .TZLosses.Values }},
+                                fill: false
+                            },
+                        ]
                     },
-                    maintainAspectRatio: false,
+
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Kills/Losses By UTC Hour'
+                        },
+                        maintainAspectRatio: false,
                         scales: {
-                        yAxes: [{
-                            stacked: false,
-                            gridLines: {
-                                display: true,
-                                color: "rgba(0,0,0,0.1)"
-                            }
-                        }],
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
                             xAxes: [{
                                 gridLines: {
                                     display: false
                                 }
                             }]
+                        },
+                        annotation: {
+                            events: [],
+                            annotations: [{
+                                type: 'box',
+                                xScaleID: 'x-axis-0',
+                                yScaleID: 'y-axis-0',
+                                xMin: 8,
+                                xMax: 10,
+                                backgroundColor: 'rgba(101, 33, 171, 0.3)',
+                                borderColor: 'rgb(101, 33, 171)',
+                                borderWidth: 1,
+                            }]
+                        },
+                        plugins: {
+                            colorschemes: {
+                                scheme: 'tableau.Tableau10'
+                            }
+                        }
                     }
-                }
-                    });
+                });
             </script>
+
+            <!-- DOW Kills / Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="dow_kills_chart" width="40" height="40" class="container"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('dow_kills_chart');
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ .DOWKills.Labels }},
+                        datasets: [
+                            {
+                                label: "Kills",
+                                backgroundColor: "#33dd33",
+                                data: {{ .DOWKills.Values }},
+                                fill: false
+                            },
+                            {
+                                label: "Losses",
+                                backgroundColor: "#ff3333",
+                                data: {{ .DOWLosses.Values }},
+                                fill: false
+                            },
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Kills/Losses By Day of Week'
+                        },
+                        maintainAspectRatio: false,
+                        scales: {
+                            yAxes: [{
+                                stacked: false,
+                                gridLines: {
+                                    display: true,
+                                    color: "rgba(0,0,0,0.1)"
+                                }
+                            }],
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                        },
+                        plugins: {
+                            colorschemes: {
+                                scheme: 'tableau.Tableau10'
+                            }
+                        }
+                    }
+                });
+            </script>
+        </div>
+
+        <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info_tab">
+            <!-- info Section -->
+
+            <!-- TZ Kills / Losses Graph -->
+            <div class="container chart-container" style="position: relative; height:40vh; width:80vw">
+                <h3>Scrape Details</h3>
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th scope="row">Alliance ID</th>
+                            <td>{{ .AllianceID }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"> Resolved Alliance Name</th>
+                            <td>{{ .AllianceName }}</td>
+                        </tr>
+                        {{ if not .StartDate.IsZero }}
+                        <tr>
+                            <th scope="row">Start Date</th>
+                            <td>{{ .StartDate }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">End Date</th>
+                            <td>{{ .EndDate }}</td>
+                        </tr>
+                        {{ end }}
+                        </tbody>
+                    </table>
+            </div>
+
         </div>
 
 
     </div>
 
-</body>
+    </body>
 
-{{ template "footer" }}
+    {{ template "footer" }}
 
 {{ end }}

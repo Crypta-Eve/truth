@@ -100,7 +100,7 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		numMissing := len(missingMails)
 		if numMissing == 0 {
 			client.Log.Println("No missing killmails, sleeping...")
-			time.Sleep(5 * time.Minute)
+			time.Sleep(15 * time.Minute)
 			continue
 		}
 
@@ -121,7 +121,9 @@ func ProcessMissingKillmails(c *cli.Context) error {
 						client.Log.Printf("Duplicate killmail ignored - %v", mail.ID)
 						continue
 					}
-					return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
+					// return cli.NewExitError(errors.Wrap(err, "Error attempting to insert killmail"), 1)
+					client.Log.Print(errors.Wrap(err, "Error attempting to insert killmail"))
+					continue
 				}
 			}
 			return nil
@@ -165,8 +167,6 @@ func ProcessMissingKillmails(c *cli.Context) error {
 						client.Log.Printf("err: %v", err)
 						continue
 					}
-
-					client.Store.
 				}
 
 				waitgroup.Done()
@@ -177,6 +177,8 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		waitgroup.Wait()
 
 		client.Log.Println("Job Complete")
+
+		return nil
 
 	}
 
@@ -204,7 +206,7 @@ func ProcessMissingZKB(c *cli.Context) error {
 
 		numMissing := len(ids)
 		if numMissing == 0 {
-			client.Log.Println("No missing zkb, sleeping for 5s")
+			client.Log.Println("No missing zkb, sleeping for 60s")
 			time.Sleep(1 * time.Minute)
 			continue
 		}

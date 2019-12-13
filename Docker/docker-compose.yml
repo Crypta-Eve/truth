@@ -1,14 +1,14 @@
 version: "3"
 
 services:
-#  wss:
-#    build: .
-#    command: "process wss"
-#    container_name: truth-wss
-#    restart: unless-stopped
-#    volumes:
-#      - ${PWD}/env.json:/app/env.json
-#
+  wss:
+    build: .
+    command: "process wss"
+    container_name: truth-wss
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
+
 #  jobs:
 #    build: .
 #    command: "process jobs"
@@ -17,24 +17,44 @@ services:
 #    volumes:
 #      - ${PWD}/env.json:/app/env.json
 
-#  missing:
-#    build: .
-#    command: "process missing"
-#    container_name: truth-missing
-#    restart: unless-stopped
-#    volumes:
-#      - ${PWD}/env.json:/app/env.json
+  missing:
+    build: .
+    command: "process missing"
+    container_name: truth-missing
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
 
-#  zkb:
-#    build: .
-#    command: "process zkb"
-#    container_name: truth-zkb
-#    restart: unless-stopped
-#    volumes:
-#      - ${PWD}/env.json:/app/env.json
+  zkb:
+    build: .
+    command: "process zkb"
+    container_name: truth-zkb
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
 
   axiom:
     image: antihax/eve-axiom
     ports:
       - 3005:3005
 
+  postgres:
+    image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: potgres
+
+  mongo:
+    image: 'mongo'
+    volumes:
+      - ./mongo-volume:/data/db
+    ports:
+      - '27017-27019:27017-27019'
+
+
+volumes:
+  db-data:
+    driver: local
