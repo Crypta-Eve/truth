@@ -9,13 +9,13 @@ services:
     volumes:
       - ${PWD}/env.json:/app/env.json
 
-#  jobs:
-#    build: .
-#    command: "process jobs"
-#    container_name: truth-jobs
-#    restart: unless-stopped
-#    volumes:
-#      - ${PWD}/env.json:/app/env.json
+  jobs:
+    build: .
+    command: "process jobs"
+    container_name: truth-jobs
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/env.json:/app/env.json
 
   missing:
     build: .
@@ -50,11 +50,13 @@ services:
   mongo:
     image: 'mongo'
     volumes:
-      - ./mongo-volume:/data/db
+      - mongo-data:/data/db
     ports:
       - '27017-27019:27017-27019'
 
 
 volumes:
   db-data:
+    driver: local
+  mongo-data:
     driver: local

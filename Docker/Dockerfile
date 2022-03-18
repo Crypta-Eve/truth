@@ -1,4 +1,4 @@
-FROM golang:1.12-stretch as builder
+FROM golang:1.18-bullseye as builder
 LABEL maintainer="Crypta Electrica <crypta@crypta.tech>"
 RUN mkdir /build 
 RUN git clone https://github.com/Crypta-Eve/truth /build

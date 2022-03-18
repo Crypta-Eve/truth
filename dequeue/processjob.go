@@ -100,7 +100,7 @@ func ProcessMissingKillmails(c *cli.Context) error {
 		numMissing := len(missingMails)
 		if numMissing == 0 {
 			client.Log.Println("No missing killmails, sleeping...")
-			time.Sleep(15 * time.Minute)
+			time.Sleep(time.Minute)
 			continue
 		}
 
@@ -305,6 +305,7 @@ func scrapePlayer(c *client.Client, job store.Queue) error {
 		req.Header.Set("User-Agent", c.UserAgent)
 
 		res, err := c.HTTP.Do(req)
+		reqTime := time.Now()
 
 		if err != nil {
 			return errors.Wrap(err, "Failed to complete character zkill request")
@@ -327,12 +328,22 @@ func scrapePlayer(c *client.Client, job store.Queue) error {
 		err = json.Unmarshal(body, &pg)
 
 		if err != nil {
+			fmt.Println(string(body))
 			return errors.Wrap(err, "Trying to decode zkill character response")
 		}
 
-		c.Store.MaintainJobReservation(job, time.Now().Add(60*time.Second))
+		c.Store.MaintainJobReservation(job, time.Now().Add(90*time.Second))
 
 		pages = append(pages, pg...)
+
+		
+		for {
+			if time.Since(reqTime) > 75 * time.Second {
+				break
+			} else {
+				time.Sleep(time.Second)
+			}
+		}
 	}
 
 	// fmt.Printf("%+v\n", pages)

@@ -1,6 +1,7 @@
 package dequeue
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Crypta-Eve/truth/client"
@@ -12,7 +13,7 @@ import (
 
 const (
 	// The zkillboard wss url
-	address          string = "wss://zkillboard.com:2096"
+	address          string = "wss://zkillboard.com/websocket/"
 	subscribeMessage string = "{\"action\":\"sub\", \"channel\":\"killstream\"}"
 )
 
@@ -37,6 +38,7 @@ func WholeWSS(c *cli.Context) error {
 	ws, resp, err := dialer.Dial(address, nil)
 	if err != nil {
 		if resp != nil {
+			fmt.Println(resp)
 			return cli.NewExitError(errors.Wrap(err, "Failed to dial the wss"), 1)
 		} else {
 			return cli.NewExitError(errors.Wrap(err, "Failed to dial the wss"), 1)
