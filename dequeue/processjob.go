@@ -446,7 +446,7 @@ func scrapeHistory(c *client.Client, job store.Queue) error {
 }
 
 func scrapeDaily(c *client.Client, date string) error {
-	apiURL := "https://zkillboard.com/api/history/%v/"
+	apiURL := "https://zkillboard.com/api/history/%v.json"
 
 	urlToHit := fmt.Sprintf(apiURL, date)
 
